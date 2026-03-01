@@ -362,10 +362,11 @@ ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, 
 
 rule-providers:
   AppBlacklist:
-    type: file
+    type: http
     behavior: classical
     format: text
-    path: ./rules/app-blacklist.list
+    url: "https://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@raw.githubusercontent.com/Littlekunlun/Mihomo-Rules/main/app-blacklist.list"
+    interval: 86400
     
   Advertising:    {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs}
   Direct:         {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Direct.mrs}
