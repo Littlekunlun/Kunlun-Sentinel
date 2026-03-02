@@ -198,6 +198,7 @@ dns:
     - DOMAIN-SUFFIX,docker.io,real-ip
     - DOMAIN-SUFFIX,market.xiaomi.com,real-ip
     - DOMAIN-SUFFIX,push.apple.com,real-ip
+    - MATCH,fake-ip
 
 # ==================== 代理策略组 ====================
 proxy-groups:
