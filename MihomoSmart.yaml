@@ -297,6 +297,8 @@ rules:
   # ================= Gemini =================
   - PROCESS-NAME,com.google.android.apps.bard,Gemini
   - RULE-SET,Gemini,Gemini
+  - DOMAIN-KEYWORD,gemini.google,Gemini
+  - DOMAIN-KEYWORD,bard.google,Gemini
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
