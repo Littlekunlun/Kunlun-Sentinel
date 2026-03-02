@@ -1,6 +1,6 @@
-# 名称: MihomoSmartProMax-Windows (tuanzi-pc)
+# 名称: MihomoSmartProMax-Windows11-PC (Verge/Nyanpasu Edition)
 # 核心: Mihomo Smart Core
-# 状态: Rev 3.1 桌面适配版 (系统栈加速 + AI 粘性增强)
+# 状态: Rev 3.2 桌面适配版
 # 更新: 2026-03-02
 
 # ==================== 锚点配置 ====================
@@ -27,10 +27,13 @@ FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
 SelectFB: &SelectFB {type: select, proxies: [一键智能, 团子招牌ION Smart组, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
 SelectPY: &SelectPY {type: select, proxies: [默认代理, 团子招牌ION Smart组, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
 SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动]}
+SelectHK: &SelectHK {type: select, proxies: [香港策略, 默认代理, 故障转移, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
+SelectSG: &SelectSG {type: select, proxies: [狮城策略, 默认代理, 故障转移, 香港策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
+SelectUS: &SelectUS {type: select, proxies: [美国策略, 默认代理, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
 
 # ==================== 代理提供者 ====================
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: '这里填写你的订阅链接', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'https://jjlkbcueiwqnwior.duboji.vip/link/9sdBjQhBBXwdkS3J?clashmeta=geo', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
 
 # ==================== 核心配置 ====================
 mode: rule
@@ -40,12 +43,12 @@ redir-port: 9797
 mixed-port: 7893
 tproxy-port: 9898
 ipv6: true
-allow-lan: false
+allow-lan: true        # [PC Adaptation] Windows 环境推荐开启局域网共享
 unified-delay: true
 tcp-concurrent: true
 log-level: info
-bind-address: '127.0.0.1'
-find-process-mode: 'always'
+bind-address: '*'      # [PC Adaptation] 允许外部通过局域网连接
+find-process-mode: 'strict'
 keep-alive-interval: 30
 keep-alive-idle: 600
 
@@ -63,7 +66,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: true 
+  override-destination: true  # [PC Adaptation] Windows 环境无 BindHosts，强制覆盖保障精准匹配
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
@@ -77,12 +80,12 @@ sniffer:
     - "Mijia Cloud"
     - "+.push.apple.com"
 
-# ==================== TUN 配置 (Windows 极限优化版) ====================
+# ==================== TUN 配置 ====================
 tun:
   enable: true
   mtu: 9000
-  device: meta
-  stack: system                # [Win11 适配] 性能远超 gvisor，更低的 CPU 占用
+  device: Mihomo              # [PC Adaptation] 标准化虚拟网卡名称
+  stack: system               # [Law 3 PC Adaptation] 废弃 gvisor，Windows 环境下使用 system 配合 Wintun 性能最优
   dns-hijack:
     - any:53
     - tcp://any:53
@@ -98,7 +101,7 @@ hosts:
   services.googleapis.cn: services.googleapis.com
   cn.bing.com: global.bing.com
 
-# ==================== DNS 配置 (Rev 3.1 确定性闭环) ====================
+# ==================== DNS 配置 ====================
 dns:
   enable: true
   ipv6: true
@@ -130,7 +133,7 @@ dns:
     - https://cloudflare-dns.com/dns-query
     
   proxy-server-nameserver:
-    - https://223.5.5.5/dns-query   # [Rev 3.1] 物理 IP 握手，极致秒连
+    - https://223.5.5.5/dns-query
     - https://doh.pub/dns-query
     
   direct-nameserver:
@@ -149,9 +152,8 @@ dns:
     - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
-    - DOMAIN-SUFFIX,market.xiaomi.com,real-ip
     - DOMAIN-SUFFIX,push.apple.com,real-ip
-    - MATCH,fake-ip                # [Rev 3.1] 封口逻辑，建立确定性闭环
+    - MATCH,fake-ip
 
 # ==================== 代理策略组 ====================
 proxy-groups:
@@ -207,9 +209,8 @@ proxy-groups:
   - {name: 英国智能,  <<: *BaseSmart, filter: *FilterUK, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_Kingdom.png}
   - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
-# ==================== 规则路由 (Rev 3.1 极致分流) ====================
+# ==================== 规则路由 ====================
 rules:
-  # QUIC 分流与阻断
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
@@ -218,11 +219,12 @@ rules:
   
   - RULE-SET,Advertising,REJECT
 
-  # ================= Gemini (Rev 3.1 增强版) =================
+  # ================= Gemini =================
   - DOMAIN-KEYWORD,gemini.google,Gemini
   - DOMAIN-KEYWORD,bard.google,Gemini
   - RULE-SET,Gemini,Gemini
 
+  # [PC Adaptation] 已清理 Android 包名规则，交由下方域名系统全量接管
   - RULE-SET,LocationDKS,抖快书定位
   - RULE-SET,Private,直接连接
   - RULE-SET,Direct,直接连接
