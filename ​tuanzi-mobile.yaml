@@ -1,7 +1,7 @@
 # 名称: MihomoSmartProMax-Android-Unrooted (FlClash Edition)
 # 核心: Mihomo Smart Core
-# 状态: GUI 客户端适配版 (剥离底层监听 + 移除 FCM 特权 + 修复重写)
-# 更新: 2026-02-25
+# 状态: Rev 3.1 稳定版 (DNS 封口 + AI 粘性增强)
+# 更新: 2026-03-02
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -64,7 +64,6 @@ profile:
   store-fake-ip: true
   smart-collector-size: 100
 
-# [Law 2 修改] 未 Root 环境下开启 override-destination 修复代理解析
 sniffer:
   enable: true
   override-destination: true 
@@ -86,7 +85,7 @@ tun:
   enable: true
   mtu: 9000
   device: meta
-  stack: gvisor                # [Law 3] Android 16 标准解
+  stack: gvisor
   dns-hijack:
     - any:53
     - tcp://any:53
@@ -96,7 +95,6 @@ tun:
   auto-redirect: false
   endpoint-independent-nat: true
   auto-detect-interface: true
-  # [清理] 移除了 Root 专属的 UID 分流代码，请在 FlClash UI 内设置分应用代理
 
 hosts:
   miwifi.com: 192.168.31.2
@@ -135,7 +133,7 @@ dns:
     - https://cloudflare-dns.com/dns-query
     
   proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
+    - https://223.5.5.5/dns-query
     - https://doh.pub/dns-query
     
   direct-nameserver:
@@ -156,10 +154,11 @@ dns:
     - DOMAIN-SUFFIX,docker.io,real-ip
     - DOMAIN-SUFFIX,market.xiaomi.com,real-ip
     - DOMAIN-SUFFIX,push.apple.com,real-ip
+    - MATCH,fake-ip
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-  - {name: 团子招牌ION, type: url-test, use: [团子机场], filter: *FilterION, interval: 300, tolerance: 50, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
+  - {name: 团子招牌ION, type: url-test, use: [团子机场], filter: *FilterION, interval: 300, tolerance: 150, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   - {name: Gemini, type: select, proxies: [团子招牌ION], icon: https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
@@ -213,18 +212,18 @@ proxy-groups:
 
 # ==================== 规则路由 ====================
 rules:
-  # QUIC 分流与阻断
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
   
-  # 广告阻断
   - RULE-SET,Advertising,REJECT
 
-  # ================= Gemini =================
+  # ================= Gemini (Rev 3.1 增强版) =================
   - PROCESS-NAME,com.google.android.apps.bard,Gemini
+  - DOMAIN-KEYWORD,gemini.google,Gemini
+  - DOMAIN-KEYWORD,bard.google,Gemini
   - RULE-SET,Gemini,Gemini
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
