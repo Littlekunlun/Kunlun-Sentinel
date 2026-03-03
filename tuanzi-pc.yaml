@@ -146,13 +146,16 @@ dns:
   fake-ip-filter:
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
-    - RULE-SET,China,real-ip
+    - RULE-SET,China,real-ip      # [User Override] 尊重用户决策：保留国内全量直连解析
     - RULE-SET,fakeip-filter,real-ip
     - DOMAIN-SUFFIX,pub.3gppnetwork.org,real-ip
     - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
     - DOMAIN-SUFFIX,push.apple.com,real-ip
+    # === [PC Adaptation] Windows NCSI 网络连通性探测特权，防止右下角地球图标 ===
+    - DOMAIN-SUFFIX,msftconnecttest.com,real-ip
+    - DOMAIN-SUFFIX,msftncsi.com,real-ip
     - MATCH,fake-ip
 
 # ==================== 代理策略组 ====================
@@ -211,11 +214,20 @@ proxy-groups:
 
 # ==================== 规则路由 ====================
 rules:
+  # === [Law 1] 物理直连与局域网特权绝对优先 ===
+  # 将局域网 IP 规则前置，防止被下方的 UDP 443 阻断规则误杀
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - RULE-SET,Private,直接连接
+  - RULE-SET,PrivateIP,直接连接,no-resolve
+
+  # === 阻断策略 ===
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
-  - DOMAIN-KEYWORD,stun,REJECT
+  # [审计拦截] 已注释掉 STUN 阻断，保障 PC 端 Discord/Teams/Zoom 语音视频工作
+  # - DOMAIN-KEYWORD,stun,REJECT
+  # - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
+  # - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   
   - RULE-SET,Advertising,REJECT
 
@@ -224,9 +236,7 @@ rules:
   - DOMAIN-KEYWORD,bard.google,Gemini
   - RULE-SET,Gemini,Gemini
 
-  # [PC Adaptation] 已清理 Android 包名规则，交由下方域名系统全量接管
   - RULE-SET,LocationDKS,抖快书定位
-  - RULE-SET,Private,直接连接
   - RULE-SET,Direct,直接连接
   - RULE-SET,XPTV,直接连接
   - DOMAIN-SUFFIX,3gppnetwork.org,UKwifi
@@ -259,7 +269,6 @@ rules:
   - RULE-SET,Proxy,国外流量
   - RULE-SET,China,国内流量
 
-  - RULE-SET,PrivateIP,直接连接,no-resolve
   - RULE-SET,XPTVIP,直接连接,no-resolve
   - RULE-SET,AIIP,人工智能,no-resolve
   - RULE-SET,TelegramIP,电报消息,no-resolve
