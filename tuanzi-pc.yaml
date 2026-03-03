@@ -162,7 +162,7 @@ dns:
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-  - {name: 团子招牌ION, type: url-test, use: [团子机场], filter: *FilterION, interval: 300, tolerance: 150, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
+  - {name: 团子招牌ION, type: url-test, use: [团子机场], filter: *FilterION, interval: 300, tolerance: 500, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   - {name: Gemini, type: select, proxies: [团子招牌ION], icon: https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
