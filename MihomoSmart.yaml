@@ -368,7 +368,7 @@ rule-providers:
     type: http
     behavior: classical
     format: text
-    url: "https://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@raw.githubusercontent.com/Littlekunlun/Mihomo-Rules/main/app-blacklist.list"
+    url: "https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list"
     interval: 86400
     
   Advertising:    {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs}
