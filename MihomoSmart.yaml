@@ -35,7 +35,7 @@ SelectUS: &SelectUS {type: select, proxies: [美国策略, 默认代理, 故障�
 
 # ==================== 代理提供者 ====================
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: 'https://jjlkbcueiwqnwior.duboji.vip/link/ntdxdF2J3Io9juoJ?clashmeta=geo', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'https://jjlkbcueiwqnwior.duboji.vip/link/c2IBRbCfry6mUvF1?clashmeta=geo', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
 
 # ==================== 监听器 ====================
 listeners:
