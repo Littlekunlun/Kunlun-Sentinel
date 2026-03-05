@@ -51,6 +51,7 @@ listeners:
   - {name: MIXED-AL, type: mixed, listen: 127.0.0.1, port: 50007, udp: true, proxy: 一键智能}
 
 # ==================== 核心配置 ====================
+global-ua: "clash.meta"
 mode: rule
 port: 7890
 socks-port: 7891
