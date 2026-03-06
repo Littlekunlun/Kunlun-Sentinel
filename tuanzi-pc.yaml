@@ -99,6 +99,10 @@ tun:
   auto-redirect: false
   endpoint-independent-nat: true
   auto-detect-interface: true
+  skip-proxy:
+    - "jjlkbcueiwqnwior.duboji.vip"
+    - "duboji.vip"
+    - "127.0.0.1/32"
 
 hosts:
   miwifi.com: 192.168.31.2
