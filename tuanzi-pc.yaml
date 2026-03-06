@@ -152,6 +152,7 @@ dns:
     - RULE-SET,Private,real-ip
     - RULE-SET,China,real-ip      # [User Override] 尊重用户决策：保留国内全量直连解析
     - RULE-SET,fakeip-filter,real-ip
+    - DOMAIN-SUFFIX,duboji.vip,real-ip
     - DOMAIN-SUFFIX,pub.3gppnetwork.org,real-ip
     - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
