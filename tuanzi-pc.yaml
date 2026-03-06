@@ -34,7 +34,7 @@ SelectUS: &SelectUS {type: select, proxies: [美国策略, 默认代理, 故障�
 
 # ==================== 代理提供者 ====================
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: 'https://jjlkbcueiwqnwior.duboji.vip/link/c2IBRbCfry6mUvF1?clashmeta=geo', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:25500/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
 
 # ==================== 核心配置 ====================
 global-ua: "clash.meta"
