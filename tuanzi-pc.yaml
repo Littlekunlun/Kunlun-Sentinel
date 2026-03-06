@@ -103,6 +103,7 @@ tun:
     - "jjlkbcueiwqnwior.duboji.vip"
     - "duboji.vip"
     - "127.0.0.1/32"
+    - "localhost"
 
 hosts:
   miwifi.com: 192.168.31.2
@@ -131,6 +132,8 @@ dns:
     "doh.pub": [1.12.12.12, 120.53.53.53]
     "dns.google": [8.8.8.8, 8.8.4.4]
     "cloudflare-dns.com": [1.1.1.1, 1.0.0.1]
+    "jjlkbcueiwqnwior.duboji.vip": [223.5.5.5, 119.29.29.29]
+    "duboji.vip": [223.5.5.5, 119.29.29.29]
     
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
@@ -226,6 +229,7 @@ rules:
   # === [Law 1] 物理直连与局域网特权绝对优先 ===  
   # === ⬇️ 就是加在这里！所有规则的最上面 ⬇️ ===
   # [破除双核死锁] 强制机场订阅域名物理直连，确保 Sub-Store 永远能拉到源头数据
+  - DOMAIN,jjlkbcueiwqnwior.duboji.vip,DIRECT
   - DOMAIN-SUFFIX,duboji.vip,DIRECT
   # === ⬆️ 插入完毕 ⬆️ ===
   # === [Law 1] 物理直连与局域网特权绝对优先 ===
