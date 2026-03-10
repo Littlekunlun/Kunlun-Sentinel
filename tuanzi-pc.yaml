@@ -172,7 +172,7 @@ dns:
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-  - {name: Ai专用, type: url-test, use: [团子机场], filter: *FilterAI, interval: 3600, tolerance: 1500, lazy: false, url: 'https://www.google.com/generate_204', timeout: 10000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png} # [Protocol 2] 重命名为 Ai专用，并绑定 FilterAI 锚点
+  - {name: Ai专用, type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   - {name: Gemini, type: select, proxies: [Ai专用], icon: https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png} # [Protocol 2] 下游指针同步
 
