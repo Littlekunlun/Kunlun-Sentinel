@@ -58,7 +58,7 @@ socks-port: 7891
 redir-port: 9797
 mixed-port: 7893
 tproxy-port: 9898
-ipv6: true
+ipv6: false
 allow-lan: false
 unified-delay: true
 tcp-concurrent: true
@@ -104,8 +104,6 @@ sniffer:
       ports: [80, 8080-8880]
     TLS:
       ports: [443, 8443]
-    QUIC:
-      ports: [443, 8443]
   skip-domain:
     - "Mijia Cloud"
     - "+.push.apple.com"
@@ -145,7 +143,7 @@ hosts:
 # ==================== DNS 配置 ====================
 dns:
   enable: true
-  ipv6: true
+  ipv6: false
   use-hosts: true
   use-system-hosts: true
   cache-algorithm: arc
