@@ -209,7 +209,7 @@ proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
   # [修改] 智能 AI 专用组 (稳定优先): 5分钟测一次 + 50ms 容差粘性 (防止乱跳) + 5秒超时宽容
-  - {name: Ai专用, type: url-test, use: [团子机场], filter: *FilterAI, interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
+  - {name: Ai专用, type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
 
   # [新增] 团子招牌 ION 智能优选组 (Smart 算法自动调度, 供手动选择用)
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
