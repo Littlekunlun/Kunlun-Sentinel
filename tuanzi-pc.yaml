@@ -239,7 +239,7 @@ rules:
 
   # === 阻断策略 ===
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
-  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT-DROP
   # [审计拦截] 已注释掉 STUN 阻断，保障 PC 端 Discord/Teams/Zoom 语音视频工作
   # - DOMAIN-KEYWORD,stun,REJECT
   # - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
