@@ -1,7 +1,7 @@
 # 名称: MihomoSmartProMax-Android-Optimized (Final-Explicit-FCM)
 # 核心: Mihomo Smart Core
 # 状态: 策略组硬直连版 (移除冗余规则 + 增强嗅探 + ION 智能分层)
-# 更新: 2026-02-08 [Rev 2]
+# 更新: 2026-03-14 [Rev 3 - AI Node Sync]
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -206,66 +206,66 @@ proxy-groups:
   # 你可以在面板手动选择 "直接连接"
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  # [修改] 智能 AI 专用组 (稳定优先): 5分钟测一次 + 50ms 容差粘性 (防止乱跳) + 5秒超时宽容
-  - {name: Ai专用, type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://fastly.jsdelivr.net/gh/Semporia/Hand-Painted-icon@master/Accommodation/Review.png}
+  # [修改] 智能 AI 专用组更名为 Gemini专用 (稳定优先): 5分钟测一次 + 50ms 容差粘性 + 原Gemini图标
+  - {name: Gemini专用, type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
   # [新增] 团子招牌 ION 智能优选组 (Smart 算法自动调度, 供手动选择用)
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
-
-  - {name: Gemini, type: select, proxies: [Ai专用], icon: https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
-  - {name: 默认代理,     <<: *SelectFB, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
-  - {name: 国外流量,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
-  - {name: 国内流量,     <<: *SelectDC, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
-  - {name: 兜底流量,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
-  - {name: 直接连接,     type: select, proxies: [DIRECT], hidden: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Direct.png}
+  - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
+  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
+  - {name: 国外流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
+  - {name: 国内流量,     <<: *SelectDC, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
+  - {name: 兜底流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
+  - {name: 直接连接,     type: select, proxies: [DIRECT], hidden: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Direct.png}
 
-  - {name: 网络测试,     <<: *SelectPY, include-all: true, filter: *FilterAL, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Speedtest.png}
+  - {name: 网络测试,     <<: *SelectPY, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Speedtest.png}
   - {name: UKwifi, type: select, proxies: [DIRECT, 欧洲智能, 英国智能], icon: https://www.giffgaff.design/iconography/icons/library/coverage-signal.svg}
-  - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港策略, 台湾策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 欧盟策略], icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
+  - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港策略, 台湾策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 欧盟策略], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
 
-  - {name: Emby服,      <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Emby.png}
-  - {name: 油管视频,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/YouTube.png}
-  - {name: 奈飞视频,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Netflix.png}
-  - {name: 国际媒体,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/DomesticMedia.png}
-  - {name: 新闻媒体,     <<: *SelectUS, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple_News.png}
+  - {name: Emby服,      <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Emby.png}
+  - {name: 油管视频,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/YouTube.png}
+  - {name: 奈飞视频,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Netflix.png}
+  - {name: 国际媒体,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/DomesticMedia.png}
+  - {name: 新闻媒体,     <<: *SelectUS, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple_News.png}
 
-  - {name: 电报消息,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
-  - {name: 推特社交,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
-  - {name: 社交平台,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
+  - {name: 电报消息,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
+  - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
+  - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
 
-  - {name: 人工智能,     type: select, proxies: [Ai专用], icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
+  # [修改] 人工智能配置与 Gemini专用 完全对齐同步为 URL-test
+  - {name: 人工智能,     type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, tolerance: 2000, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
 
   - {name: 货币平台,     <<: *SelectSG, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/Bitcloud.png}
-  - {name: 游戏平台,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
+  - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
-  - {name: 微软服务,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
+  - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
   
-  - {name: 谷歌服务,     type: select, proxies: [人工智能, 美国策略], icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
+  # [修改] 谷歌服务严格跟随 Gemini专用
+  - {name: 谷歌服务,     type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
   
-  - {name: 苹果服务,     <<: *SelectPY, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
+  - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
 
-  - {name: 香港策略,     type: select, proxies: [香港智能], include-all: true, filter: *FilterHK, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
-  - {name: 台湾策略,     type: select, proxies: [台湾智能], include-all: true, filter: *FilterTW, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
-  - {name: 狮城策略,     type: select, proxies: [狮城智能], include-all: true, filter: *FilterSG, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
-  - {name: 日本策略,     type: select, proxies: [日本智能], include-all: true, filter: *FilterJP, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
-  - {name: 韩国策略,     type: select, proxies: [韩国智能], include-all: true, filter: *FilterKR, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
-  - {name: 美国策略,     type: select, proxies: [美国智能], include-all: true, filter: *FilterUS, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
-  - {name: 欧盟策略,     type: select, proxies: [欧洲智能], include-all: true, filter: *FilterEU, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
+  - {name: 香港策略,     type: select, proxies: [香港智能], include-all: true, filter: *FilterHK, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
+  - {name: 台湾策略,     type: select, proxies: [台湾智能], include-all: true, filter: *FilterTW, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
+  - {name: 狮城策略,     type: select, proxies: [狮城智能], include-all: true, filter: *FilterSG, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
+  - {name: 日本策略,     type: select, proxies: [日本智能], include-all: true, filter: *FilterJP, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
+  - {name: 韩国策略,     type: select, proxies: [韩国智能], include-all: true, filter: *FilterKR, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
+  - {name: 美国策略,     type: select, proxies: [美国智能], include-all: true, filter: *FilterUS, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
+  - {name: 欧盟策略,     type: select, proxies: [欧洲智能], include-all: true, filter: *FilterEU, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
-  - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
-  - {name: 全球手动,     type: select, include-all: true, filter: *FilterAL, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
+  - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
+  - {name: 全球手动,     type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
 
-  - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
-  - {name: 台湾智能,  <<: *BaseSmart, filter: *FilterTW, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
-  - {name: 日本智能,  <<: *BaseSmart, filter: *FilterJP, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
-  - {name: 狮城智能,  <<: *BaseSmart, filter: *FilterSG, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
-  - {name: 韩国智能,  <<: *BaseSmart, filter: *FilterKR, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
-  - {name: 美国智能,  <<: *BaseSmart, filter: *FilterUS, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
-  - {name: 英国智能,  <<: *BaseSmart, filter: *FilterUK, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_Kingdom.png}
-  - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://git.imee.me/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
+  - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
+  - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
+  - {name: 台湾智能,  <<: *BaseSmart, filter: *FilterTW, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
+  - {name: 日本智能,  <<: *BaseSmart, filter: *FilterJP, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
+  - {name: 狮城智能,  <<: *BaseSmart, filter: *FilterSG, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
+  - {name: 韩国智能,  <<: *BaseSmart, filter: *FilterKR, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
+  - {name: 美国智能,  <<: *BaseSmart, filter: *FilterUS, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
+  - {name: 英国智能,  <<: *BaseSmart, filter: *FilterUK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_Kingdom.png}
+  - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
 # ==================== 规则路由 ====================
 rules:
@@ -295,10 +295,10 @@ rules:
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   # ================= Gemini =================
-  - PROCESS-NAME,com.google.android.apps.bard,Gemini
-  - RULE-SET,Gemini,Gemini
-  - DOMAIN-KEYWORD,gemini.google,Gemini
-  - DOMAIN-KEYWORD,bard.google,Gemini
+  - PROCESS-NAME,com.google.android.apps.bard,Gemini专用
+  - RULE-SET,Gemini,Gemini专用
+  - DOMAIN-KEYWORD,gemini.google,Gemini专用
+  - DOMAIN-KEYWORD,bard.google,Gemini专用
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
@@ -371,47 +371,47 @@ rule-providers:
     url: "https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list"
     interval: 86400
     
-  Advertising:    {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs}
-  Direct:         {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Direct.mrs}
-  LocationDKS:    {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/LocationDKS.mrs}
-  Private:        {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Private.mrs}
-  Download:       {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Download.mrs}
-  Speedtest:      {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Speedtest.mrs}
+  Advertising:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs}
+  Direct:         {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Direct.mrs}
+  LocationDKS:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/LocationDKS.mrs}
+  Private:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Private.mrs}
+  Download:       {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Download.mrs}
+  Speedtest:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Speedtest.mrs}
   Gemini:         {<<: *BehaviorDN, url: https://raw.githubusercontent.com/peiyingyao/Rule-for-OCD/refs/heads/master/rule/Clash/Gemini/Gemini_OCD_Domain.mrs}
   AI:             {<<: *BehaviorDN, url: https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/ai.mrs}
-  Telegram:       {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Telegram.mrs}
-  Twitter:        {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Twitter.mrs}
-  SocialMedia:    {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/SocialMedia.mrs}
-  NewsMedia:      {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/NewsMedia.mrs}
+  Telegram:       {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Telegram.mrs}
+  Twitter:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Twitter.mrs}
+  SocialMedia:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/SocialMedia.mrs}
+  NewsMedia:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/NewsMedia.mrs}
   GamesCN:        {<<: *BehaviorDN, url: https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/games-cn.mrs}
-  Games:          {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Games.mrs}
-  Crypto:         {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Crypto.mrs}
-  Netflix:        {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Netflix.mrs}
-  YouTube:        {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/YouTube.mrs}
-  XPTV:           {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/XPTV.mrs}
-  Emby:           {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Emby.mrs}
-  Streaming:      {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs}
-  AppleCN:        {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/AppleCN.mrs}
-  Apple:          {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs}
-  Google:         {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Google.mrs}
+  Games:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Games.mrs}
+  Crypto:         {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Crypto.mrs}
+  Netflix:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Netflix.mrs}
+  YouTube:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/YouTube.mrs}
+  XPTV:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/XPTV.mrs}
+  Emby:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Emby.mrs}
+  Streaming:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs}
+  AppleCN:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/AppleCN.mrs}
+  Apple:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs}
+  Google:         {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Google.mrs}
   GoogleFCM:      {<<: *BehaviorDN, url: https://v6.gh-proxy.org/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/meta/domain/googlefcm.mrs}
-  Microsoft:      {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Microsoft.mrs}
-  Facebook:       {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Facebook.mrs}
-  Proxy:          {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/Proxy.mrs}
-  China:          {<<: *BehaviorDN, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/domain/China.mrs}
+  Microsoft:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Microsoft.mrs}
+  Facebook:       {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Facebook.mrs}
+  Proxy:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Proxy.mrs}
+  China:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/China.mrs}
 
-  PrivateIP:      {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Private.mrs}
+  PrivateIP:      {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Private.mrs}
   AIIP:           {<<: *BehaviorIP, url: https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/ai.mrs}
-  TelegramIP:     {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Telegram.mrs}
-  SocialMediaIP:  {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/SocialMedia.mrs}
-  XPTVIP:         {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/XPTV.mrs}
-  EmbyIP:         {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Emby.mrs}
-  NetflixIP:      {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Netflix.mrs}
-  StreamingIP:    {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Streaming.mrs}
-  GoogleIP:       {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Google.mrs}
-  FacebookIP:     {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Facebook.mrs}
-  ProxyIP:        {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
-  ChinaIP:        {<<: *BehaviorIP, url: https://git.imee.me/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
+  TelegramIP:     {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Telegram.mrs}
+  SocialMediaIP:  {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/SocialMedia.mrs}
+  XPTVIP:         {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/XPTV.mrs}
+  EmbyIP:         {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Emby.mrs}
+  NetflixIP:      {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Netflix.mrs}
+  StreamingIP:    {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Streaming.mrs}
+  GoogleIP:       {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Google.mrs}
+  FacebookIP:     {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Facebook.mrs}
+  ProxyIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
+  ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
 
   ukwifi:          {<<: *ClassicalText, url: https://raw.githubusercontent.com/HenryChiao/wificalling/refs/heads/main/qiao/wificalling.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
