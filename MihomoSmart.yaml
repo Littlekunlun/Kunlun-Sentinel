@@ -206,7 +206,7 @@ proxy-groups:
   # 你可以在面板手动选择 "直接连接"
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: Gemini专用, type: smart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 3600, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 5, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true, tolerance: 2000, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  - {name: Gemini专用, type: smart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 86400, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 10, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true, tolerance: 5000, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   # [新增] 团子招牌 ION 智能优选组 (Smart 算法自动调度, 供手动选择用)
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
@@ -232,7 +232,7 @@ proxy-groups:
   - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
 
-  - {name: 人工智能,     type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}  
+  - {name: 人工智能, type: smart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 86400, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 10, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true, tolerance: 5000, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
   
   - {name: 货币平台,     <<: *SelectSG, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/Bitcloud.png}
   - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
