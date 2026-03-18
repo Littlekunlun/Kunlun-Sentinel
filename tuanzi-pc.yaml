@@ -192,7 +192,7 @@ proxy-groups:
   - {name: 电报消息,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
   - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
-  - {name: 人工智能, type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
+  - {name: 人工智能,     type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
   - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
   - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
