@@ -206,8 +206,8 @@ proxy-groups:
   # 你可以在面板手动选择 "直接连接"
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: Gemini专用, type: smart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 86400, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 10, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true, tolerance: 5000, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
-  
+  - {name: Gemini专用, type: smart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 864000, lazy: true, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 99, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true, tolerance: 5000, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+ 
   # [新增] 团子招牌 ION 智能优选组 (Smart 算法自动调度, 供手动选择用)
   - {name: 团子招牌ION Smart组, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   
