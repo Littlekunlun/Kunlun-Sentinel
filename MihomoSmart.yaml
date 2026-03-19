@@ -387,7 +387,7 @@ rule-providers:
   Netflix:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Netflix.mrs}
   YouTube:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/YouTube.mrs}
   XPTV:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/XPTV.mrs}
-  Emby:           {<<: *BehaviorDY, url: https://gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.yaml}
+  Emby:           {<<: *BehaviorDN, url: https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo-rules/raw/refs/heads/rules/Emby.mrs}
   Streaming:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs}
   AppleCN:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/AppleCN.mrs}
   Apple:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs}
