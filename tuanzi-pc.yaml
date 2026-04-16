@@ -70,7 +70,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: true  # [PC Adaptation] Windows 环境无 BindHosts，强制覆盖保障精准匹配
+  override-destination: true  # [PC Adaptation] Windows 环境强制覆盖保障精准匹配
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
@@ -78,9 +78,16 @@ sniffer:
       ports: [80, 8080-8880]
     TLS:
       ports: [443, 8443]
+  # [Law 3 核心减负与防断流] 给高频长连接和敏感域名发放“嗅探免检金牌”
   skip-domain:
     - "Mijia Cloud"
     - "+.push.apple.com"
+    # ⬇️ Gemini 与 Google 核心免嗅探阵列 ⬇️
+    - "+.google.com"
+    - "+.googleapis.com"
+    - "+.gstatic.com"
+    - "gemini.google.com"
+    - "alkali.google.com"
 
 # ==================== TUN 配置 ====================
 tun:
