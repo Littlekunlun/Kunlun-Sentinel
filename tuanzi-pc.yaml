@@ -56,8 +56,8 @@ find-process-mode: 'strict'
 keep-alive-interval: 30
 keep-alive-idle: 600
 
-experimental:
-  quic-go-disable-gso: true
+#experimental:
+#  quic-go-disable-gso: true
 
 lgbm-auto-update: true
 lgbm-update-interval: 72
