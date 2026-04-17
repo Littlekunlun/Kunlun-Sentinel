@@ -61,7 +61,7 @@ tproxy-port: 9898
 ipv6: false
 allow-lan: false
 unified-delay: true
-tcp-concurrent: true
+tcp-concurrent: false
 log-level: info
 bind-address: '127.0.0.1'
 find-process-mode: 'strict'
@@ -107,6 +107,11 @@ sniffer:
   skip-domain:
     - "Mijia Cloud"
     - "+.push.apple.com"
+    - "+.google.com"
+    - "+.googleapis.com"
+    - "+.gstatic.com"
+    - "gemini.google.com"
+    - "alkali.google.com"
 
 # ==================== TUN 配置 ====================
 tun:
