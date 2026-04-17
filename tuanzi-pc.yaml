@@ -173,6 +173,9 @@ dns:
     # === [PC Adaptation] Windows NCSI 网络连通性探测特权，防止右下角地球图标 ===
     - DOMAIN-SUFFIX,msftconnecttest.com,real-ip
     - DOMAIN-SUFFIX,msftncsi.com,real-ip
+    - DOMAIN-SUFFIX,google.com,real-ip
+    - DOMAIN-SUFFIX,googleapis.com,real-ip
+    - DOMAIN-SUFFIX,gstatic.com,real-ip
     - MATCH,fake-ip
 
 # ==================== 代理策略组 ====================
