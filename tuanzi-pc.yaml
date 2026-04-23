@@ -180,8 +180,8 @@ dns:
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-# [Law 4 强制干预] 废除 Smart 动态漂移，改用 url-test + 5000ms 容差实现绝对 IP 强绑定
-  - {name: Gemini专用, type: url-test, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', interval: 300, tolerance: 5000, lazy: true, url: 'https://www.google.com/generate_204', icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+
+  - {name: Gemini专用, type: select, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
