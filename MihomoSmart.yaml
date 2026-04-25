@@ -68,11 +68,13 @@ find-process-mode: 'strict'
 keep-alive-interval: 30
 keep-alive-idle: 600
 
-authentication:
-  - mihomo:yyds666
+authentication: []     
 skip-auth-prefixes:
-  - 192.168.1.0/24
+  - 192.168.0.0/16     # 囊括所有 192.168.x.x 局域网/热点网段
+  - 10.0.0.0/8         # 囊括所有 10.x.x.x 局域网段 (常见于旁路由或企业网)
+  - 172.16.0.0/12      # 囊括所有 172.16.x.x 局域网段 (常见于 Docker 等虚拟网卡)
   - 127.0.0.1/8
+
 
 experimental:
   quic-go-disable-gso: true
@@ -153,7 +155,7 @@ dns:
   use-system-hosts: true
   cache-algorithm: arc
   prefer-h3: false
-  listen: 127.0.0.1:1053
+  listen: 0.0.0.0:1053
   
   default-nameserver:
     - 223.5.5.5
