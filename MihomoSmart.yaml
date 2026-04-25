@@ -59,11 +59,11 @@ redir-port: 9797
 mixed-port: 7893
 tproxy-port: 9898
 ipv6: false
-allow-lan: true
+allow-lan: false
 unified-delay: true
 tcp-concurrent: false
 log-level: info
-bind-address: '*'
+bind-address: '127.0.0.1'
 find-process-mode: 'strict'
 keep-alive-interval: 30
 keep-alive-idle: 600
