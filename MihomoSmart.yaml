@@ -143,7 +143,7 @@ tun:
 hosts:
   miwifi.com: 192.168.31.2
   services.googleapis.cn: services.googleapis.com
-  cn.bing.com: global.bing.com
+#  cn.bing.com: global.bing.com
 
 # ==================== DNS 配置 ====================
 dns:
@@ -199,7 +199,7 @@ dns:
     # GoogleFCM 规则集虽然在 Rules 里移除了，但在这里建议保留，防止 DNS 污染
     - RULE-SET,GoogleFCM,real-ip 
     - DOMAIN-SUFFIX,pub.3gppnetwork.org,real-ip
-    - DOMAIN-SUFFIX,bing.com,real-ip
+#    - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
     - DOMAIN-SUFFIX,market.xiaomi.com,real-ip
