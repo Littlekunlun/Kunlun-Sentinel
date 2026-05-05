@@ -296,6 +296,7 @@ rules:
 
   # ==================== 👇 新增的本地热修复补丁 👇 ====================
   # --- 本地精准狙击：垃圾广告与隐私窃取 ---
+  - DOMAIN-KEYWORD,tiktokpangle,REJECT
   - DOMAIN-SUFFIX,myadsget.com,REJECT
   - DOMAIN-KEYWORD,mossturbo,REJECT
   - DOMAIN-SUFFIX,vbnmhjlp.com,REJECT
