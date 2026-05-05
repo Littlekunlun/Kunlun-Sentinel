@@ -293,20 +293,8 @@ rules:
   
   # [优化] 拦截广告与隐私追踪
   - RULE-SET,Advertising,REJECT
-
-  # ==================== 👇 新增的本地热修复补丁 👇 ====================
-  # --- 本地精准狙击：垃圾广告与隐私窃取 ---
-  - DOMAIN-KEYWORD,tiktokpangle,REJECT
-  - DOMAIN-SUFFIX,myadsget.com,REJECT
-  - DOMAIN-KEYWORD,mossturbo,REJECT
-  - DOMAIN-SUFFIX,vbnmhjlp.com,REJECT
-
-  # --- 本地精准放行：国内基础组件与个推直连 (防绕路耗电) ---
-  - DOMAIN-KEYWORD,getui,国内流量
-  - DOMAIN-KEYWORD,gepush,国内流量
-  - DOMAIN-SUFFIX,alipayobjects.com,国内流量
-  # ==================== 👆 新增的本地热修复补丁 👆 ====================
-
+  - RULE-SET,MyReject,REJECT  
+  
   # [优化] FCM 强制走专用策略组 (GoogleFCM -> 直连)
   # 已移除 RULE-SET,GoogleFCM 规则，仅保留核心心跳匹配
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
@@ -381,13 +369,7 @@ ClassicalText: &ClassicalText {type: http, interval: 86400, behavior: classical,
 ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, format: yaml, proxy: DIRECT}
 
 rule-providers:
-  AppBlacklist:
-    type: http
-    behavior: classical
-    format: text
-    url: "https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list"
-    interval: 86400
-    
+  AppBlacklist:   {<<: *ClassicalText, url: https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list}
   Advertising:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs}
   Direct:         {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Direct.mrs}
   LocationDKS:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/LocationDKS.mrs}
@@ -432,6 +414,8 @@ rule-providers:
 
   ukwifi:          {<<: *ClassicalText, url: https://raw.githubusercontent.com/HenryChiao/wificalling/refs/heads/main/qiao/wificalling.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
+  # [新增] 个人维护的广告与隐私追踪黑名单
+  MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
 
 # ==================== EOF ====================
