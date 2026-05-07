@@ -274,8 +274,6 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
-  - RULE-SET,AppBlacklist,直接连接
-
   # [优化] QUIC 智能分流
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   
@@ -284,6 +282,8 @@ rules:
   - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
+  
+  - RULE-SET,AppBlacklist,直接连接
   
   # 【核心修正】 FCM 端口特权通道 (解决 5228 端口误走代理导致的断连)
   # 无需 Sniffer 介入，直接物理直连，秒连！
