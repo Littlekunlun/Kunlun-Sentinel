@@ -292,8 +292,8 @@ rules:
   - DST-PORT,5230,GoogleFCM
   
   # [优化] 拦截广告与隐私追踪
-  - RULE-SET,Advertising,REJECT
-  - RULE-SET,MyReject,REJECT  
+  - RULE-SET,Advertising,REJECT-DROP
+  - RULE-SET,MyReject,REJECT-DROP  
   
   # [优化] FCM 强制走专用策略组 (GoogleFCM -> 直连)
   # 已移除 RULE-SET,GoogleFCM 规则，仅保留核心心跳匹配
