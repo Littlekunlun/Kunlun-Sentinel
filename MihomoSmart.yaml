@@ -112,6 +112,10 @@ sniffer:
     - "+.gstatic.com"
     - "gemini.google.com"
     - "alkali.google.com"
+    - "+.qq.com"
+    - "+.tencent.com"
+    - "+.163.com"
+    - "+.xunyou.mobi"
 
 # ==================== TUN 配置 ====================
 tun:
