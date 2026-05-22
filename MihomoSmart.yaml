@@ -196,7 +196,7 @@ dns:
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
-    
+    - RULE-SET,AppBlacklist,real-ip
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
     - RULE-SET,China,real-ip
