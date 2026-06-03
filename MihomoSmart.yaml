@@ -10,7 +10,7 @@ BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.go
 BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
 BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
 BaseUT: &BaseUT {type: url-test, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true}
-BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 5000, max-failed-times: 3, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
+BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -61,7 +61,7 @@ tproxy-port: 9898
 ipv6: false
 allow-lan: true
 unified-delay: true
-tcp-concurrent: false
+tcp-concurrent: true
 log-level: info
 bind-address: '*'
 find-process-mode: 'strict'
@@ -156,6 +156,7 @@ dns:
   use-hosts: true
   use-system-hosts: true
   cache-algorithm: arc
+  cache-capacity: 4096
   prefer-h3: false
   listen: 0.0.0.0:1053
   
