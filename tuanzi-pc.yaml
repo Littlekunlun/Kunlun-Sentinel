@@ -185,8 +185,8 @@ dns:
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-  # [防风控核心] 坚决保留 select 实现绝对 IP 强绑定
-  - {name: Gemini专用, type: select, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+
+  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
