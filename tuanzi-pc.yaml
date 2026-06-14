@@ -51,6 +51,10 @@ tcp-concurrent: false  # [防断流核心] 坚决关闭并发
 log-level: info
 external-controller: 127.0.0.1:9090
 secret: ""
+# [终极修复] 强制下载并在本地运行 Zashboard 面板，彻底解决 failed to fetch
+external-ui-url: "https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip"
+external-ui-name: zashboard
+external-ui: ui
 bind-address: '*'      # [PC Adaptation] 允许外部通过局域网连接
 find-process-mode: 'strict'
 keep-alive-interval: 30
@@ -189,7 +193,7 @@ proxy-groups:
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, American策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
+  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
   - {name: 国外流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
   - {name: 国内流量,     <<: *SelectDC, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
   - {name: 兜底流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
@@ -337,7 +341,7 @@ rule-providers:
   Netflix:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Netflix.mrs}
   YouTube:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/YouTube.mrs}
   XPTV:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/XPTV.mrs}
-  Emby:           {<<: *BehaviorDN, url: https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.mrs}
+  Emby:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.mrs}
   Streaming:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs}
   AppleCN:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/AppleCN.mrs}
   Apple:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs}
