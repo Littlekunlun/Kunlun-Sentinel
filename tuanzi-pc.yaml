@@ -1,6 +1,6 @@
 # 名称: MihomoSmartProMax-Windows11-PC (Unified Edition)
 # 核心: Mihomo Smart Core
-# 状态: Rev 4.0 桌面适配版 (全端同步 + DNS级广告黑洞)
+# 状态: Rev 4.1 桌面纯净提速版 (彻底剥离去广告规则，回归纯粹路由)
 # 更新: 2026-03-14
 
 # ==================== 锚点配置 ====================
@@ -50,7 +50,7 @@ unified-delay: true
 tcp-concurrent: false  # [防断流核心] 坚决关闭并发
 log-level: info
 external-controller: 127.0.0.1:9090
-secret: 
+secret: "MyPCProxy888" # [防线加固] 已修复空密码问题
 bind-address: '*'      # [PC Adaptation] 允许外部通过局域网连接
 find-process-mode: 'strict'
 keep-alive-interval: 30
@@ -133,9 +133,6 @@ dns:
     - 1.0.0.1
   
   nameserver-policy:
-    # [同步安卓核心科技] DNS级广告与追踪黑洞 (极速丢弃，节约CPU)
-    "RULE-SET:Advertising": rcode://success
-    "RULE-SET:MyReject": rcode://success
     "+.miwifi.com": "dhcp://system"
     "dns.alidns.com": [223.5.5.5, 223.6.6.6]
     "doh.pub": [1.12.12.12, 120.53.53.53]
@@ -260,10 +257,6 @@ rules:
   # [同步安卓] 应用黑名单直连
   - RULE-SET,AppBlacklist,直接连接
   
-  # [同步安卓] 拦截广告与隐私追踪 (使用更暴力的 REJECT-DROP)
-  - RULE-SET,Advertising,REJECT-DROP
-  - RULE-SET,MyReject,REJECT-DROP  
-  
   # ================= Gemini =================
   - DOMAIN-KEYWORD,gemini.google,Gemini专用
   - DOMAIN-KEYWORD,bard.google,Gemini专用
@@ -326,8 +319,6 @@ ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, 
 
 rule-providers:
   AppBlacklist:   {<<: *ClassicalText, url: https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list}
-  # [同步安卓] 更换为更强力的 Adblock 规则库
-  Advertising:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs}
   Direct:         {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Direct.mrs}
   LocationDKS:    {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/LocationDKS.mrs}
   Private:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Private.mrs}
@@ -370,8 +361,6 @@ rule-providers:
 
   ukwifi:          {<<: *ClassicalText, url: https://raw.githubusercontent.com/HenryChiao/wificalling/refs/heads/main/qiao/wificalling.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
-  # [同步安卓] 个人维护的广告与隐私追踪黑名单
-  MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
 
 # ==================== EOF ====================
