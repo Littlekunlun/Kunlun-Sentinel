@@ -50,7 +50,7 @@ unified-delay: true
 tcp-concurrent: false  # [防断流核心] 坚决关闭并发
 log-level: info
 external-controller: 127.0.0.1:9090
-secret: 
+secret:
 bind-address: '*'      # [PC Adaptation] 允许外部通过局域网连接
 find-process-mode: 'strict'
 keep-alive-interval: 30
