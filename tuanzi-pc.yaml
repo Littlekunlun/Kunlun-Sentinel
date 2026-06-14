@@ -113,7 +113,6 @@ tun:
 hosts:
   miwifi.com: 192.168.31.2
   services.googleapis.cn: services.googleapis.com
-  # 已根据 Windows 环境需求，永久删除 cn.bing.com 的 Hosts 劫持
 
 # ==================== DNS 配置 ====================
 dns:
@@ -133,6 +132,7 @@ dns:
     - 1.0.0.1
   
   nameserver-policy:
+    # 已彻底剥离安卓端的去广告 DNS 劫持策略，让 DNS 响应纯净提速
     "+.miwifi.com": "dhcp://system"
     "dns.alidns.com": [223.5.5.5, 223.6.6.6]
     "doh.pub": [1.12.12.12, 120.53.53.53]
@@ -183,12 +183,13 @@ dns:
 # ==================== 代理策略组 ====================
 proxy-groups:
 
-  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  # [实战真理] 开启 Smart 算法，依托 prefer-asn 锁定底层物理机房，兼顾极速与风控豁免！
+  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
+  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, American策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
   - {name: 国外流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
   - {name: 国内流量,     <<: *SelectDC, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
   - {name: 兜底流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
@@ -336,7 +337,7 @@ rule-providers:
   Netflix:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Netflix.mrs}
   YouTube:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/YouTube.mrs}
   XPTV:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/XPTV.mrs}
-  Emby:           {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.mrs}
+  Emby:           {<<: *BehaviorDN, url: https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.mrs}
   Streaming:      {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs}
   AppleCN:        {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/AppleCN.mrs}
   Apple:          {<<: *BehaviorDN, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs}
