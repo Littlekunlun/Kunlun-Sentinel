@@ -6,10 +6,11 @@
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
-BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
-BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
-BaseUT: &BaseUT {type: url-test, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true}
+# [性能极致压榨] PC端算力充沛，全面废除 lazy 懒惰模式，全天候后台测速实现 0 毫秒无缝切换
+BaseFB: &BaseFB {type: fallback, interval: 200, lazy: false, url: 'https://www.google.com/generate_204'}
+BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
+BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
+BaseUT: &BaseUT {type: url-test, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', hidden: true}
 BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -125,7 +126,7 @@ dns:
   use-hosts: true
   use-system-hosts: true
   cache-algorithm: arc
-  cache-capacity: 4096
+  cache-capacity: 20480       # [PC 提速核心] 将缓存池扩大5倍，榨干电脑内存换取网页极速秒开
   prefer-h3: false
   listen: 127.0.0.1:1053      # [PC Adaptation] Windows 推荐监听本地环回
   
@@ -188,7 +189,7 @@ dns:
 proxy-groups:
 
   # [实战真理] 开启 Smart 算法，依托 prefer-asn 锁定底层物理机房，兼顾极速与风控豁免！
-  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
@@ -259,7 +260,7 @@ rules:
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
   
-  # [同步安卓] 应用黑名单直连
+  # [保留用户的特定诉求] 应用黑名单直连 (包含您需要的特定域名)
   - RULE-SET,AppBlacklist,直接连接
   
   # ================= Gemini =================
