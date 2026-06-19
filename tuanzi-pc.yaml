@@ -189,7 +189,7 @@ dns:
 proxy-groups:
 
   # [实战真理] 开启 Smart 算法，依托 prefer-asn 锁定底层物理机房，兼顾极速与风控豁免！
-  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*(ION|gemini))(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
   - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
