@@ -203,7 +203,7 @@ dns:
     - RULE-SET,fakeip-filter,real-ip
     # GoogleFCM 规则集虽然在 Rules 里移除了，但在这里建议保留，防止 DNS 污染
     - RULE-SET,GoogleFCM,real-ip 
-    - DOMAIN-SUFFIX,pub.3gppnetwork.org,real-ip
+    - DOMAIN-SUFFIX,3gppnetwork.org,real-ip
 #    - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
