@@ -422,7 +422,7 @@ rule-providers:
   ProxyIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
   ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
 
-  ukwifi:          {<<: *ClassicalText, url: https://raw.githubusercontent.com/HenryChiao/wificalling/refs/heads/main/qiao/wificalling.list}
+  ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
   # [新增] 个人维护的广告与隐私追踪黑名单
   MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
