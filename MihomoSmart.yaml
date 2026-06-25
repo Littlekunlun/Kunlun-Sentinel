@@ -116,6 +116,7 @@ sniffer:
     - "+.tencent.com"
     - "+.163.com"
     - "+.xunyou.mobi"
+    - "+.3gppnetwork.org"
 
 # ==================== TUN 配置 ====================
 tun:
