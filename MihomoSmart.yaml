@@ -280,6 +280,10 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
+  # [广电VoLTE保活] 强制中国大陆运营商VoLTE/IMS直连，优先于UKwifi规则
+  - DOMAIN-KEYWORD,mcc460,DIRECT
+  - DOMAIN-KEYWORD,mnc015,DIRECT
+
   # [优化] QUIC 智能分流
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   
