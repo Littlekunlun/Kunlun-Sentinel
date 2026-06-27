@@ -278,6 +278,12 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
+  # 【核心修正】 FCM 端口特权通道 (解决 5228 端口误走代理导致的断连)
+  # 无需 Sniffer 介入，直接物理直连，秒连！
+  - DST-PORT,5228,GoogleFCM
+  - DST-PORT,5229,GoogleFCM
+  - DST-PORT,5230,GoogleFCM
+
   # [广电VoLTE保活] 强制中国大陆运营商VoLTE/IMS直连，优先于UKwifi规则
   - DOMAIN-KEYWORD,mcc460,DIRECT
   - DOMAIN-KEYWORD,mnc015,DIRECT
@@ -292,12 +298,6 @@ rules:
   - DOMAIN-KEYWORD,stun,REJECT
   
   - RULE-SET,AppBlacklist,直接连接
-  
-  # 【核心修正】 FCM 端口特权通道 (解决 5228 端口误走代理导致的断连)
-  # 无需 Sniffer 介入，直接物理直连，秒连！
-  - DST-PORT,5228,GoogleFCM
-  - DST-PORT,5229,GoogleFCM
-  - DST-PORT,5230,GoogleFCM
   
   # [优化] 拦截广告与隐私追踪
   - RULE-SET,Advertising,REJECT
