@@ -7,10 +7,10 @@
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
-BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
-BaseUT: &BaseUT {type: url-test, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true}
-BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
+# BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
+# BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
+# BaseUT: &BaseUT {type: url-test, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true}
+# BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -110,8 +110,6 @@ sniffer:
     - "+.google.com"
     - "+.googleapis.com"
     - "+.gstatic.com"
-    - "gemini.google.com"
-    - "alkali.google.com"
     - "+.qq.com"
     - "+.tencent.com"
     - "+.163.com"
@@ -168,8 +166,6 @@ dns:
     - 1.0.0.1
   
   nameserver-policy:
-    "RULE-SET:Advertising": rcode://success
-    "RULE-SET:MyReject": rcode://success
     "+.miwifi.com": "dhcp://system"
     "dns.alidns.com": [223.5.5.5, 223.6.6.6]
     "doh.pub": [1.12.12.12, 120.53.53.53]
@@ -197,6 +193,8 @@ dns:
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
+    - RULE-SET,Advertising,fake-ip    # ← 新增，必须在 China 之前
+    - RULE-SET,MyReject,fake-ip       # ← 新增，必须在 China 之前
     - RULE-SET,AppBlacklist,real-ip
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
@@ -302,8 +300,8 @@ rules:
   - DST-PORT,5230,GoogleFCM
   
   # [优化] 拦截广告与隐私追踪
-  - RULE-SET,Advertising,REJECT-DROP
-  - RULE-SET,MyReject,REJECT-DROP  
+  - RULE-SET,Advertising,REJECT
+  - RULE-SET,MyReject,REJECT  
   
   # [优化] FCM 强制走专用策略组 (GoogleFCM -> 直连)
   # 已移除 RULE-SET,GoogleFCM 规则，仅保留核心心跳匹配
