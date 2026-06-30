@@ -1,15 +1,12 @@
 # 名称: MihomoSmartProMax-Android-Optimized (Final-Explicit-FCM)
 # 核心: Mihomo Smart Core
-# 状态: 策略组硬直连版 (移除冗余规则 + 增强嗅探 + ION 智能分层)
-# 更新: 2026-03-14 [Rev 3 - AI Node Sync]
+# 状态: 全局 Smart 化 + 双层嵌套逃生防灾 + 物理层去广告
+# 更新: 2026-06-30 [Rev 4 - Smart Ultimate & Fallback Shell]
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-# BaseCH: &BaseCH {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: consistent-hashing, hidden: true}
-# BaseCR: &BaseCR {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', strategy: round-robin, hidden: true}
-# BaseUT: &BaseUT {type: url-test, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true}
 BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -24,15 +21,14 @@ FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|
 FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
 
 FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
-FilterAI: &FilterAI '^(?i)(?=.*(ION|gemini))(?!.*延迟).*$'
 
-# [更新] 已加入 "'团子招牌ION Smart组'" 到选择列表
-SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION Smart组', 一键智能, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
-SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION Smart组', 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
-SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动]}
-SelectHK: &SelectHK {type: select, proxies: [香港策略, 默认代理, 故障转移, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
-SelectSG: &SelectSG {type: select, proxies: [狮城策略, 默认代理, 故障转移, 香港策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
-SelectUS: &SelectUS {type: select, proxies: [美国策略, 默认代理, 故障转移, 香港策略, 狮城策略, 日本策略, 韩国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, 直接连接]}
+# [优化] 区域策略组全部由 Smart 接管
+SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
+SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
+SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动]}
+SelectHK: &SelectHK {type: select, proxies: [香港智能, 默认代理, 故障转移, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
+SelectSG: &SelectSG {type: select, proxies: [狮城智能, 默认代理, 故障转移, 香港智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
+SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
 
 # ==================== 代理提供者 ====================
 proxy-providers:
@@ -68,12 +64,6 @@ find-process-mode: 'strict'
 keep-alive-interval: 30
 keep-alive-idle: 600
 
-#authentication:
-#  - mihomo:yyds666
-#skip-auth-prefixes:
-#  - 192.168.1.0/24
-#  - 127.0.0.1/8
-
 experimental:
   quic-go-disable-gso: true
 
@@ -92,8 +82,6 @@ profile:
   store-fake-ip: true
   smart-collector-size: 100
 
-# [必须修正] Sniffer: 防止篡改 BindHosts IP
-# 保持 override-destination: false，同时加入 parse-pure-ip 增强识别
 sniffer:
   enable: true
   override-destination: false 
@@ -125,28 +113,19 @@ tun:
   dns-hijack:
     - any:53
     - tcp://any:53
-  
-  # [优化] 增加 UDP 超时时间，参考了你提供的稳定配置
   udp-timeout: 300
-  
   auto-route: true
   strict-route: true
   auto-redirect: false
-  
-  # [优化] 开启全锥型 NAT
   endpoint-independent-nat: true
-  
   auto-detect-interface: true
   include-android-user: [0, 10]
   exclude-uid: []
-  # 保持白名单模式
   include-uid: []
  
-
 hosts:
   miwifi.com: 192.168.31.2
   services.googleapis.cn: services.googleapis.com
-#  cn.bing.com: global.bing.com
 
 # ==================== DNS 配置 ====================
 dns:
@@ -189,21 +168,18 @@ dns:
     - https://doh.pub/dns-query
     - https://doh.360.cn/dns-query
     
-  # [优化] Rule 模式
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
-    - RULE-SET,Advertising,fake-ip    # ← 新增，必须在 China 之前
-    - RULE-SET,MyReject,fake-ip       # ← 新增，必须在 China 之前
+    - RULE-SET,Advertising,fake-ip
+    - RULE-SET,MyReject,fake-ip
     - RULE-SET,AppBlacklist,real-ip
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
     - RULE-SET,China,real-ip
     - RULE-SET,fakeip-filter,real-ip
-    # GoogleFCM 规则集虽然在 Rules 里移除了，但在这里建议保留，防止 DNS 污染
     - RULE-SET,GoogleFCM,real-ip 
     - DOMAIN-SUFFIX,3gppnetwork.org,real-ip
-#    - DOMAIN-SUFFIX,bing.com,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
     - DOMAIN-SUFFIX,market.xiaomi.com,real-ip
@@ -212,25 +188,28 @@ dns:
 
 # ==================== 代理策略组 ====================
 proxy-groups:
-  # [新增] 强制直连组 (对应 GoogleFCM)
-  # 你可以在面板手动选择 "直接连接"
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: Gemini专用, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: false, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  # 【升级】Gemini 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
+  - {name: Gemini-ION引擎, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true}
+  - {name: Gemini专用, type: select, proxies: [Gemini-ION引擎, 美国智能], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
-  # [新增] 团子招牌 ION 智能优选组 (Smart 算法自动调度, 供手动选择用)
-  - {name: '团子招牌ION Smart组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: false, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
+  # 【升级】全局 ION 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
+  - {name: ION智能引擎, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: true}
+  - {name: '团子招牌ION主用组', type: select, proxies: [ION智能引擎, 美国智能], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 故障转移,     <<: *BaseFB, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
+  - {name: 故障转移,     <<: *BaseFB, proxies: [香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
   - {name: 国外流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
   - {name: 国内流量,     <<: *SelectDC, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
   - {name: 兜底流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
   - {name: 直接连接,     type: select, proxies: [DIRECT], hidden: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Direct.png}
 
   - {name: 网络测试,     <<: *SelectPY, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Speedtest.png}
-  - {name: UKwifi, type: select, proxies: [DIRECT, 欧洲智能, 英国智能], icon: https://www.giffgaff.design/iconography/icons/library/coverage-signal.svg}
-  - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港策略, 台湾策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 欧盟策略], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
+  - {name: UKwifi,       type: select, proxies: [DIRECT, 欧洲智能, 英国智能], icon: https://www.giffgaff.design/iconography/icons/library/coverage-signal.svg}
+  
+  # [优化] 所有地区 Select 组被取缔，全部使用 Smart 智能组接管
+  - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港智能, 台湾智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 欧洲智能], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
 
   - {name: Emby服,      <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Emby.png}
   - {name: 油管视频,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/YouTube.png}
@@ -249,22 +228,13 @@ proxy-groups:
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
   - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
   
-  # [修改] 谷歌服务严格跟随 Gemini专用
   - {name: 谷歌服务,     type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
-  
   - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
-
-  - {name: 香港策略,     type: select, proxies: [香港智能], include-all: true, filter: *FilterHK, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
-  - {name: 台湾策略,     type: select, proxies: [台湾智能], include-all: true, filter: *FilterTW, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
-  - {name: 狮城策略,     type: select, proxies: [狮城智能], include-all: true, filter: *FilterSG, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
-  - {name: 日本策略,     type: select, proxies: [日本智能], include-all: true, filter: *FilterJP, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
-  - {name: 韩国策略,     type: select, proxies: [韩国智能], include-all: true, filter: *FilterKR, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
-  - {name: 美国策略,     type: select, proxies: [美国智能], include-all: true, filter: *FilterUS, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
-  - {name: 欧盟策略,     type: select, proxies: [欧洲智能], include-all: true, filter: *FilterEU, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
   - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
   - {name: 全球手动,     type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
 
+  # 底层真·智能测速矩阵 (全部隐式继承 lazy: false)
   - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
   - {name: 台湾智能,  <<: *BaseSmart, filter: *FilterTW, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
@@ -278,20 +248,17 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
-  # 【核心修正】 FCM 端口特权通道 (解决 5228 端口误走代理导致的断连)
-  # 无需 Sniffer 介入，直接物理直连，秒连！
+  # ① FCM 物理特权通道
   - DST-PORT,5228,GoogleFCM
   - DST-PORT,5229,GoogleFCM
   - DST-PORT,5230,GoogleFCM
 
-  # [广电VoLTE保活] 强制中国大陆运营商VoLTE/IMS直连，优先于UKwifi规则
+  # ② 广电/运营商 VoLTE 直连锁
   - DOMAIN-KEYWORD,mcc460,DIRECT
   - DOMAIN-KEYWORD,mnc015,DIRECT
 
-  # [优化] QUIC 智能分流
+  # ③ QUIC 阻断分流
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
-  
-  # [优化] 阻断其他 UDP 443
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
@@ -299,12 +266,11 @@ rules:
   
   - RULE-SET,AppBlacklist,直接连接
   
-  # [优化] 拦截广告与隐私追踪
+  # ④ 去广告闭环
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT  
   
-  # [优化] FCM 强制走专用策略组 (GoogleFCM -> 直连)
-  # 已移除 RULE-SET,GoogleFCM 规则，仅保留核心心跳匹配
+  # ⑤ FCM 兜底
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   # ================= Gemini =================
@@ -325,9 +291,7 @@ rules:
   - RULE-SET,Download,直接连接
   - RULE-SET,AppleCN,直接连接
   
-  # [其他 Google 规则] 兜底走代理
   - RULE-SET,GoogleFCM,谷歌服务 
-  
   - RULE-SET,AI,人工智能
   
   - DOMAIN-KEYWORD,speedtest,网络测试
@@ -422,7 +386,6 @@ rule-providers:
 
   ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
-  # [新增] 个人维护的广告与隐私追踪黑名单
   MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
 
