@@ -1,13 +1,15 @@
 # 名称: MihomoSmartProMax-Android-Optimized (Final-Explicit-FCM)
 # 核心: Mihomo Smart Core
-# 状态: 全局 Smart 化 + 双层嵌套逃生防灾 + 物理层去广告
-# 更新: 2026-06-30 [Rev 4 - Smart Ultimate & Fallback Shell]
+# 状态: 全局 Smart 化 + 智能组面板可视 + 纯净 ION 独立组
+# 更新: 2026-06-30 [Rev 5 - Perfect Shell & Pure ION]
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, hidden: true, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
+
+# [修复] 移除了根锚点的 hidden: true，让所有继承此锚点的智能组(美国智能等)在面板上可见
+BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -22,7 +24,7 @@ FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|
 
 FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
 
-# [优化] 区域策略组全部由 Smart 接管
+# 区域策略组全部由 Smart 接管
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
 SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动, 直接连接]}
 SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 全球手动]}
@@ -190,13 +192,12 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  # 【升级】Gemini 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
+  # 【保留】Gemini 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
   - {name: Gemini-ION引擎, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true}
   - {name: Gemini专用, type: select, proxies: [Gemini-ION引擎, 美国智能], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
-  # 【升级】全局 ION 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
-  - {name: ION智能引擎, <<: *BaseSmart, use: [团子机场], filter: *FilterION, hidden: true}
-  - {name: '团子招牌ION主用组', type: select, proxies: [ION智能引擎, 美国智能], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
+  # 【重构】ION 恢复为纯净的独立 Smart 组 (仅含 ION 节点，直接在面板可视)
+  - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 故障转移,     <<: *BaseFB, proxies: [香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 全球手动, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
@@ -208,7 +209,6 @@ proxy-groups:
   - {name: 网络测试,     <<: *SelectPY, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Speedtest.png}
   - {name: UKwifi,       type: select, proxies: [DIRECT, 欧洲智能, 英国智能], icon: https://www.giffgaff.design/iconography/icons/library/coverage-signal.svg}
   
-  # [优化] 所有地区 Select 组被取缔，全部使用 Smart 智能组接管
   - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港智能, 台湾智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 欧洲智能], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
 
   - {name: Emby服,      <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Emby.png}
@@ -234,7 +234,7 @@ proxy-groups:
   - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
   - {name: 全球手动,     type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
 
-  # 底层真·智能测速矩阵 (全部隐式继承 lazy: false)
+  # 底层真·智能测速矩阵 (已去除 hidden: true 覆盖，面板完全可视，支持手动锁定节点)
   - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
   - {name: 台湾智能,  <<: *BaseSmart, filter: *FilterTW, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
