@@ -275,6 +275,7 @@ rules:
 
   # ================= Gemini =================
   - PROCESS-NAME,com.google.android.apps.bard,Gemini专用
+  - PROCESS-NAME,com.anthropic.claude,Gemini专用
   - RULE-SET,Gemini,Gemini专用
   - DOMAIN-KEYWORD,gemini.google,Gemini专用
   - DOMAIN-KEYWORD,bard.google,Gemini专用
