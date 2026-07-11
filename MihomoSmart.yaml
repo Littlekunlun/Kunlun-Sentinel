@@ -1,14 +1,13 @@
 # 名称: MihomoSmartProMax-Android-Optimized (Final-Explicit-FCM)
 # 核心: Mihomo Smart Core
-# 状态: 全局 Smart 化 + 智能组面板可视 + 纯净 ION 独立组
-# 更新: 2026-06-30 [Rev 5 - Perfect Shell & Pure ION]
+# 状态: 全局 Smart 化 + AI链路统一重构 + 一键智能休眠
+# 更新: 2026-07-11 [Rev 6 - AI Unified & Lazy Smart]
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
 
-# [修复] 移除了根锚点的 hidden: true，让所有继承此锚点的智能组(美国智能等)在面板上可见
 BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: false, url: 'https://www.google.com/generate_204', timeout: 2000, max-failed-times: 2, uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -192,11 +191,15 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  # 【保留】Gemini 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
+  # 【重构】AI 防灾双层架构：底层智能选路 (隐藏) -> 表层按需逃生 (面板操作)
   - {name: Gemini-ION引擎, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true}
-  - {name: Gemini专用, type: select, proxies: [Gemini-ION引擎, 美国智能], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   
-  # 【重构】ION 恢复为纯净的独立 Smart 组 (仅含 ION 节点，直接在面板可视)
+  # 【新增】单独的手动选择组，包含当前机场所有节点，用于极端情况下的绝对掌控
+  - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
+  
+  # 【重构】统领全部 AI (Gemini/Claude) 及谷歌服务的总阀门
+  - {name: AI专用, type: select, proxies: [Gemini-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
@@ -221,21 +224,23 @@ proxy-groups:
   - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
 
-  - {name: 人工智能, type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
+  # 【重构】人工智能现在引用 AI专用
+  - {name: 人工智能, type: select, proxies: [AI专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
   
   - {name: 货币平台,     <<: *SelectSG, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/Bitcloud.png}
   - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
   - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
   
-  - {name: 谷歌服务,     type: select, proxies: [Gemini专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
+  # 【重构】谷歌服务现在引用 AI专用
+  - {name: 谷歌服务,     type: select, proxies: [AI专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
   - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
 
   - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
   - {name: 全球手动,     type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
 
-  # 底层真·智能测速矩阵 (已去除 hidden: true 覆盖，面板完全可视，支持手动锁定节点)
-  - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
+  # 【修复】一键智能增加 lazy: true 属性，使其在不用时完全休眠，不耗费任何测速带宽
+  - {name: 一键智能,  <<: *BaseSmart, lazy: true, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
   - {name: 台湾智能,  <<: *BaseSmart, filter: *FilterTW, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
   - {name: 日本智能,  <<: *BaseSmart, filter: *FilterJP, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
@@ -273,12 +278,12 @@ rules:
   # ⑤ FCM 兜底
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
-  # ================= Gemini =================
-  - PROCESS-NAME,com.google.android.apps.bard,Gemini专用
-  - PROCESS-NAME,com.anthropic.claude,Gemini专用
-  - RULE-SET,Gemini,Gemini专用
-  - DOMAIN-KEYWORD,gemini.google,Gemini专用
-  - DOMAIN-KEYWORD,bard.google,Gemini专用
+  # ================= AI专用 =================
+  - PROCESS-NAME,com.google.android.apps.bard,AI专用
+  - PROCESS-NAME,com.anthropic.claude,AI专用
+  - RULE-SET,Gemini,AI专用
+  - DOMAIN-KEYWORD,gemini.google,AI专用
+  - DOMAIN-KEYWORD,bard.google,AI专用
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
