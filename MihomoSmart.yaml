@@ -191,7 +191,7 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: 美国-ION引擎, <<: *BaseSmart, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true}
+  - {name: 美国-ION引擎, <<: *BaseSmart, lazy: true, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true}
   
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
   
