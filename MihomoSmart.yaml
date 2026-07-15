@@ -246,13 +246,27 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
-  # [Law 1]
+  - UID,1001,DIRECT
+  - PROCESS-NAME,com.android.phone,DIRECT
+  - PROCESS-NAME,com.android.server.telecom,DIRECT
+  - AND,((DST-PORT,5060),(NETWORK,UDP)),DIRECT
+  - AND,((DST-PORT,500),(NETWORK,UDP)),DIRECT
+  - AND,((DST-PORT,4500),(NETWORK,UDP)),DIRECT
+  - DOMAIN-KEYWORD,mcc460,DIRECT
+  - DOMAIN-KEYWORD,mnc015,DIRECT
+  - DOMAIN-KEYWORD,ims,DIRECT
+  - DOMAIN-KEYWORD,volte,DIRECT
+  - DOMAIN-KEYWORD,epdg,DIRECT
+  - DOMAIN-SUFFIX,3gppnetwork.org,DIRECT
+
   - DST-PORT,5228,GoogleFCM
   - DST-PORT,5229,GoogleFCM
   - DST-PORT,5230,GoogleFCM
+  
+  - RULE-SET,Advertising,REJECT
+  - RULE-SET,MyReject,REJECT
 
-  - DOMAIN-KEYWORD,mcc460,DIRECT
-  - DOMAIN-KEYWORD,mnc015,DIRECT
+  - RULE-SET,AppBlacklist,直接连接
 
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
@@ -260,11 +274,9 @@ rules:
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
   
-  - RULE-SET,Advertising,REJECT
-  - RULE-SET,MyReject,REJECT
-  - RULE-SET,AppBlacklist,直接连接
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
+  # ================= AI专用 =================
   - PROCESS-NAME,com.google.android.apps.bard,AI专用
   - PROCESS-NAME,com.anthropic.claude,AI专用
   - RULE-SET,Gemini,AI专用
