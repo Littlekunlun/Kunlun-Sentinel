@@ -267,6 +267,8 @@ rules:
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
 
+  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
+
   - RULE-SET,AppBlacklist,直接连接
 
 #  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
