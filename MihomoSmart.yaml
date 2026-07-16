@@ -263,6 +263,8 @@ rules:
   - DST-PORT,5228,GoogleFCM
   - DST-PORT,5229,GoogleFCM
   - DST-PORT,5230,GoogleFCM
+
+  - PROCESS-NAME,com.instagram.android,社交平台
   
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
