@@ -60,7 +60,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: true
+  override-destination: false
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
