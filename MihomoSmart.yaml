@@ -282,6 +282,8 @@ rules:
   # ================= AI专用 =================
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
+  - DOMAIN-SUFFIX,chatgpt.com,人工智能
+  - DOMAIN-SUFFIX,openai.com,人工智能
   - PROCESS-NAME,com.google.android.apps.bard,AI专用
   - PROCESS-NAME,com.anthropic.claude,AI专用
   - RULE-SET,Gemini,AI专用
