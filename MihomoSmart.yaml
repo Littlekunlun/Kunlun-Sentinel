@@ -269,17 +269,7 @@ rules:
 
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
 
-  - RULE-SET,AppBlacklist,直接连接
-
-  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
-  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
-  - DOMAIN-KEYWORD,stun,REJECT
-  
-  - DOMAIN-KEYWORD,mtalk,GoogleFCM
-
-  # ================= AI专用 =================
+# ================= AI专用 =================
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
   - DOMAIN-SUFFIX,chatgpt.com,人工智能
@@ -292,6 +282,16 @@ rules:
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
+
+  - RULE-SET,AppBlacklist,直接连接
+
+  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+  - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
+  - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
+  - DOMAIN-KEYWORD,stun,REJECT
+  
+  - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   - RULE-SET,LocationDKS,抖快书定位
   - RULE-SET,Private,直接连接
