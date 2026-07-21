@@ -269,19 +269,26 @@ rules:
 
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
 
-# ================= AI专用 =================
+  # ================= AI专用 =================
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
-  - DOMAIN-SUFFIX,chatgpt.com,人工智能
-  - DOMAIN-SUFFIX,openai.com,人工智能
   - PROCESS-NAME,com.google.android.apps.bard,AI专用
   - PROCESS-NAME,com.anthropic.claude,AI专用
   - RULE-SET,Gemini,AI专用
   - DOMAIN-KEYWORD,gemini.google,AI专用
   - DOMAIN-KEYWORD,bard.google,AI专用
 
+  - DOMAIN-SUFFIX,chatgpt.com,人工智能
+  - DOMAIN-SUFFIX,openai.com,人工智能
+  - DOMAIN-SUFFIX,oaistatic.com,人工智能
+  - DOMAIN-SUFFIX,oaiusercontent.com,人工智能
+  - DOMAIN-SUFFIX,featureassets.org,人工智能
+  
+  - AND,((DST-PORT,3478),(NETWORK,UDP),(PROCESS-NAME,com.openai.chatgpt)),人工智能
+
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
+
 
   - RULE-SET,AppBlacklist,直接连接
 
