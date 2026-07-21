@@ -264,6 +264,8 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
+  - RULE-SET,Private,直接连接,no-resolve
+
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
 
