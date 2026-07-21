@@ -27,7 +27,7 @@ FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择]}
-SelectHK: &SelectHK {type: select, proxies: [香港智能, 默认代理, 故障转移, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
+#SelectHK: &SelectHK {type: select, proxies: [香港智能, 默认代理, 故障转移, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectSG: &SelectSG {type: select, proxies: [狮城智能, 默认代理, 故障转移, 香港智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 
@@ -249,6 +249,10 @@ proxy-groups:
 # ==================== 规则路由 ====================
 rules:
 
+  - DST-PORT,5228,GoogleFCM
+  - DST-PORT,5229,GoogleFCM
+  - DST-PORT,5230,GoogleFCM
+  
   - UID,1001,DIRECT
   - PROCESS-NAME,com.android.phone,DIRECT
   - PROCESS-NAME,com.android.server.telecom,DIRECT
@@ -260,10 +264,6 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
-  - DST-PORT,5228,GoogleFCM
-  - DST-PORT,5229,GoogleFCM
-  - DST-PORT,5230,GoogleFCM
-  
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
 
