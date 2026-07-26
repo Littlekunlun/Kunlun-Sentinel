@@ -15,7 +15,7 @@ FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|
 FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
 
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
-SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
+SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择]}
 SelectHK: &SelectHK {type: select, proxies: [香港智能, 默认代理, 故障转移, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectSG: &SelectSG {type: select, proxies: [狮城智能, 默认代理, 故障转移, 香港智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
@@ -60,7 +60,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: false
+  override-destination: true
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
@@ -124,8 +124,9 @@ dns:
     "doh.pub": [1.12.12.12, 120.53.53.53]
     "dns.google": [8.8.8.8, 8.8.4.4]
     "cloudflare-dns.com": [1.1.1.1, 1.0.0.1]
-    "jjlkbcueiwqnwior.duboji.vip": [223.5.5.5, 119.29.29.29]
-    "duboji.vip": [223.5.5.5, 119.29.29.29]
+    "rule-set:AppBlacklist": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
+    "rule-set:China": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
+    "rule-set:Direct": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
   respect-rules: true
@@ -160,7 +161,7 @@ dns:
     - MATCH,fake-ip
 
 proxy-groups:
-  - {name: 美国-ION引擎, <<: *BaseSmart, interval: 1200, timeout: 3000, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
+  - {name: 美国-ION引擎, <<: *BaseSmart, lazy: true, interval: 1200, timeout: 3000, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', hidden: true, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
@@ -212,13 +213,16 @@ rules:
   - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
   - RULE-SET,AppBlacklist,直接连接
-  - PROCESS-NAME,com.google.android.apps.bard,AI专用
-  - PROCESS-NAME,com.anthropic.claude,AI专用
+  - DOMAIN-SUFFIX,claude.ai,AI专用
+  - DOMAIN-SUFFIX,anthropic.com,AI专用
   - RULE-SET,Gemini,AI专用
   - DOMAIN-KEYWORD,gemini.google,AI专用
   - DOMAIN-KEYWORD,bard.google,AI专用
-  - PROCESS-NAME,com.openai.chatgpt,人工智能
-  - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
+  - DOMAIN-SUFFIX,chatgpt.com,人工智能
+  - DOMAIN-SUFFIX,openai.com,人工智能
+  - DOMAIN-SUFFIX,oaistatic.com,人工智能
+  - DOMAIN-SUFFIX,oaiusercontent.com,人工智能
+  - DOMAIN-SUFFIX,featureassets.org,人工智能
   - RULE-SET,LocationDKS,抖快书定位
   - RULE-SET,Direct,直接连接
   - RULE-SET,XPTV,直接连接
