@@ -253,11 +253,6 @@ rules:
   - DST-PORT,5228,GoogleFCM
   - DST-PORT,5229,GoogleFCM
   - DST-PORT,5230,GoogleFCM
-
-  - DST-PORT,3478,REJECT
-  - DST-PORT,19302,REJECT
-  - DST-PORT,19305,REJECT
-  - DST-PORT,5349,REJECT
   
   - UID,1001,DIRECT
   - PROCESS-NAME,com.android.phone,DIRECT
@@ -297,13 +292,15 @@ rules:
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
 
+  - DST-PORT,3478,REJECT
+  - DST-PORT,19302,REJECT
+  - DST-PORT,19305,REJECT
+  - DST-PORT,5349,REJECT
 
   - RULE-SET,AppBlacklist,直接连接
 
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,19302),(NETWORK,UDP)),REJECT
-  - AND,((DST-PORT,3478),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
   
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
