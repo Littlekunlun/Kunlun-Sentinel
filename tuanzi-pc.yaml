@@ -34,7 +34,7 @@ tproxy-port: 9898
 ipv6: false
 allow-lan: true
 unified-delay: true
-tcp-concurrent: false
+tcp-concurrent: true
 log-level: info
 external-controller: 127.0.0.1:9090
 secret: ""
@@ -60,7 +60,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: true
+  override-destination: false
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
