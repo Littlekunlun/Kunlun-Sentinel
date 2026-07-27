@@ -194,7 +194,6 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-# 👑 [全量节点 + 极限阻尼版 Smart] 保留所有 ION 节点，利用超长间隔与高容错强行压制 LightGBM 频跳
   - {name: 美国-ION引擎, <<: *BaseSmart, interval: 600, timeout: 3500, max-failed-times: 3, prefer-asn: true, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
   
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
