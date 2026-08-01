@@ -8,7 +8,7 @@ BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-c
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
 
-BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: true}
+BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
