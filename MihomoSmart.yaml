@@ -264,6 +264,11 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
+  - DST-PORT,3478,REJECT
+  - DST-PORT,19302,REJECT
+  - DST-PORT,19305,REJECT
+  - DST-PORT,5349,REJECT
+
   - RULE-SET,Private,直接连接,no-resolve
 
   - RULE-SET,Advertising,REJECT
@@ -290,11 +295,6 @@ rules:
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
-
-  - DST-PORT,3478,REJECT
-  - DST-PORT,19302,REJECT
-  - DST-PORT,19305,REJECT
-  - DST-PORT,5349,REJECT
 
   - RULE-SET,AppBlacklist,直接连接
 
