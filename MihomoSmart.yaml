@@ -315,7 +315,8 @@ rules:
   - RULE-SET,ukwifi,UKwifi
   - RULE-SET,Download,直接连接
   - RULE-SET,AppleCN,直接连接
-  
+
+  - DOMAIN-REGEX,^r+[0-9]+(---|\.)sn-(2x3|ni5|j5o)\w{5}\.xn--ngstr-lra8j\.com$,直接连接
   - RULE-SET,GoogleFCM,谷歌服务 
   - RULE-SET,AI,人工智能
   
