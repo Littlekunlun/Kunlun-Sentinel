@@ -208,6 +208,7 @@ rules:
   - RULE-SET,Private,直接连接
   - RULE-SET,PrivateIP,直接连接,no-resolve
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
+  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,3478,REJECT
   - DST-PORT,19302,REJECT
