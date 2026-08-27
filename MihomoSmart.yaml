@@ -264,6 +264,7 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
+  - AND,((DST-PORT,3478),(NETWORK,UDP),(PROCESS-NAME,com.openai.chatgpt)),人工智能
   - DST-PORT,3478,REJECT
   - DST-PORT,19302,REJECT
   - DST-PORT,19305,REJECT
@@ -290,8 +291,6 @@ rules:
   - DOMAIN-SUFFIX,oaistatic.com,人工智能
   - DOMAIN-SUFFIX,oaiusercontent.com,人工智能
   - DOMAIN-SUFFIX,featureassets.org,人工智能
-  
-  - AND,((DST-PORT,3478),(NETWORK,UDP),(PROCESS-NAME,com.openai.chatgpt)),人工智能
 
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
