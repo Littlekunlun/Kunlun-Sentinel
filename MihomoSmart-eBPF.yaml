@@ -371,8 +371,8 @@ rules:
   - PROCESS-NAME,com.openai.chatgpt,人工智能
   - PROCESS-NAME,com.google.android.googlequicksearchbox,人工智能
 
-  - AND,((DST-PORT,443),(NETWORK,UDP),(PROCESS-NAME,com.google.android.apps.bard)),AI专用
-  - AND,((DST-PORT,443),(NETWORK,UDP),(PROCESS-NAME,com.google.android.googlequicksearchbox)),AI专用
+ # - AND,((DST-PORT,443),(NETWORK,UDP),(PROCESS-NAME,com.google.android.apps.bard)),AI专用
+ # - AND,((DST-PORT,443),(NETWORK,UDP),(PROCESS-NAME,com.google.android.googlequicksearchbox)),AI专用
 
   - RULE-SET,AppBlacklist,直接连接
 
