@@ -106,8 +106,9 @@ listeners:
       state-capacity: 32768        # 日志里出现 "map ... is 85.0% full" 再考虑调大
 
     shared:
-      # !!! 必须替换成你手机热点实际下联网卡名，参见文件顶部注意事项第 1 条 !!!
-      interface: [REPLACE_ME_下联网卡名]
+      # 已通过 dumpsys wifi 确认：mApInterfaceName: wlan2, mRole: ROLE_SOFTAP_TETHERED
+      # 如果以后换机型/换 ROM，这个名字大概率会变，出问题先重新跑一遍 dumpsys wifi 核对
+      interface: [wlan2]
       ipv6-mode: always
       state-capacity: 32768
       advanced:
