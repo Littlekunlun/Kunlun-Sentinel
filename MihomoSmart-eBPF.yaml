@@ -81,15 +81,18 @@ listeners:
     dns-mode: hijack              # 53 端口无条件劫持进核心，不受下面 bypass-rule-set 影响
     udp-timeout: 300
 
-    # 命中 ChinaIP 这个已有的 ipcidr 规则集的目标地址，直接在内核放行，不进核心。
-    # 2026-08-30：曾短暂加入 CNIPv4/CNIPv6（X-Shelby/geoip），加入后 Google 无法访问，
-    # 已回滚移除，怀疑是该数据源网段划分有误伤，或裸 github.com 直连拉取异常，
-    # 具体原因待日志/数据核实后再决定要不要重新加回来，见文件末尾诊断记录。
+    # 命中以下 ipcidr 规则集的目标地址，直接在内核放行，不进核心。
+    # ChinaIP 复用原有 rule-providers；MetaCN 是新增的 MetaCubeX/meta-rules-dat 官方数据源，
+    # 两者范围有重叠，属于交叉覆盖，不冲突。
+    # 2026-08-30：曾短暂加入过 CNIPv4/CNIPv6（X-Shelby/geoip 个人项目），加入后
+    # Google 无法访问——经交叉核对确认该数据源把谷歌的 74.125.16.64/26 网段误标成了
+    # 中国 IP，已彻底移除，换成官方维护的 MetaCN。
     # 注意：fake-ip 段(198.18.0.1/16)永远不受这条影响，会始终进核心——
     #   这意味着你在 K11 里对 Advertising/MyReject 做的 fake-ip 强制引流广告拦截方案，
     #   跟这里的 CN-IP 内核旁路是兼容的，不会因为开了这个 bypass 就导致广告拦截失效。
     bypass-rule-set:
       - ChinaIP
+      - MetaCN
 
     # 2026-08-30：多天实测确认运行正常，已从项目默认建议的 false 改为 true——
     # 私网地址(10/8、192.168/16 等)直接在内核放行，不进核心，不进 Zashboard 连接记录。
@@ -481,8 +484,7 @@ rule-providers:
   FacebookIP:     {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Facebook.mrs}
   ProxyIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
   ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
-  CNIPv4:         {type: http, behavior: ipcidr, format: text, interval: 86400, url: https://github.com/X-Shelby/geoip/releases/download/latest/cn_v4.txt}
-  CNIPv6:         {type: http, behavior: ipcidr, format: text, interval: 86400, url: https://github.com/X-Shelby/geoip/releases/download/latest/cn_v6.txt}
+  MetaCN:         {<<: *BehaviorIP, url: https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs}
 
   ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
