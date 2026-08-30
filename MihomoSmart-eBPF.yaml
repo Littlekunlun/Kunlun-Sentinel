@@ -82,17 +82,20 @@ listeners:
     udp-timeout: 300
 
     # 命中 ChinaIP 这个已有的 ipcidr 规则集的目标地址，直接在内核放行，不进核心。
-    # 复用你原有 rule-providers 里已经存在的 ChinaIP（behavior: ipcidr），不需要新建。
+    # 2026-08-30：曾短暂加入 CNIPv4/CNIPv6（X-Shelby/geoip），加入后 Google 无法访问，
+    # 已回滚移除，怀疑是该数据源网段划分有误伤，或裸 github.com 直连拉取异常，
+    # 具体原因待日志/数据核实后再决定要不要重新加回来，见文件末尾诊断记录。
     # 注意：fake-ip 段(198.18.0.1/16)永远不受这条影响，会始终进核心——
     #   这意味着你在 K11 里对 Advertising/MyReject 做的 fake-ip 强制引流广告拦截方案，
     #   跟这里的 CN-IP 内核旁路是兼容的，不会因为开了这个 bypass 就导致广告拦截失效。
     bypass-rule-set:
       - ChinaIP
 
-    # 网关场景（热点下联设备）通常建议 false，否则下联设备之间的私网互访会被
-    # 直接放行、拿不到统计。如果只是想让"手机自己访问路由器"这类流量走直连，
-    # 可以按需改回 true——两种取舍都合理，看你更在意统计完整性还是私网访问效率。
-    bypass-private-address: false
+    # 2026-08-30：多天实测确认运行正常，已从项目默认建议的 false 改为 true——
+    # 私网地址(10/8、192.168/16 等)直接在内核放行，不进核心，不进 Zashboard 连接记录。
+    # 代价是下联设备之间/下联设备访问网关本身这部分流量的统计会看不到，
+    # 如果之后需要排查下联互访相关问题，记得这是第一个要回头检查的开关。
+    bypass-private-address: true
 
     local:
       # cgroup v2 挂载点，一般不用填，会自动探测
@@ -106,8 +109,9 @@ listeners:
       state-capacity: 32768        # 日志里出现 "map ... is 85.0% full" 再考虑调大
 
     shared:
-      # !!! 必须替换成你手机热点实际下联网卡名，参见文件顶部注意事项第 1 条 !!!
-      interface: [REPLACE_ME_下联网卡名]
+      # 已通过 dumpsys wifi 确认：mApInterfaceName: wlan2, mRole: ROLE_SOFTAP_TETHERED
+      # 如果以后换机型/换 ROM，这个名字大概率会变，出问题先重新跑一遍 dumpsys wifi 核对
+      interface: [wlan2]
       ipv6-mode: always
       state-capacity: 32768
       advanced:
@@ -477,6 +481,8 @@ rule-providers:
   FacebookIP:     {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Facebook.mrs}
   ProxyIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
   ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
+  CNIPv4:         {type: http, behavior: ipcidr, format: text, interval: 86400, url: https://github.com/X-Shelby/geoip/releases/download/latest/cn_v4.txt}
+  CNIPv6:         {type: http, behavior: ipcidr, format: text, interval: 86400, url: https://github.com/X-Shelby/geoip/releases/download/latest/cn_v6.txt}
 
   ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
