@@ -58,7 +58,7 @@ SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障�
 
 # ==================== 代理提供者 ====================
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:3001/6gzuq4bCIKgElmsM1morgKn/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:3001/HH6IkpFzEQAH3yuJoNC4/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
 
 # ==================== 监听器 ====================
 listeners:
