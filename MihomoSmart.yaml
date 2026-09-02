@@ -355,6 +355,7 @@ rules:
   - RULE-SET,FacebookIP,社交平台,no-resolve
   - RULE-SET,ProxyIP,国外流量,no-resolve
   - RULE-SET,ChinaIP,国内流量,no-resolve
+  - RULE-SET,MetaCN,国内流量,no-resolve
 
   - MATCH,兜底流量
 
@@ -408,6 +409,7 @@ rule-providers:
   FacebookIP:     {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Facebook.mrs}
   ProxyIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs}
   ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
+  MetaCN:         {<<: *BehaviorIP, url: https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs}
 
   ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
