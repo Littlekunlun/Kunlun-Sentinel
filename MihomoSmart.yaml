@@ -271,7 +271,8 @@ rules:
   - DST-PORT,5349,REJECT
 
   - RULE-SET,Private,直接连接,no-resolve
-
+  
+  - DOMAIN-SUFFIX,mdt.qq.com,REJECT-DROP
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
 
