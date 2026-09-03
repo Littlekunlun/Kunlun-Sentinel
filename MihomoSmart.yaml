@@ -272,9 +272,8 @@ rules:
 
   - RULE-SET,Private,直接连接,no-resolve
   
-  - DOMAIN-SUFFIX,mdt.qq.com,REJECT-DROP
-  - RULE-SET,Advertising,REJECT
-  - RULE-SET,MyReject,REJECT
+  - RULE-SET,Advertising,REJECT-DROP
+  - RULE-SET,MyReject,REJECT-DROP
 
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
 
