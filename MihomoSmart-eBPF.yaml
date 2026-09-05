@@ -230,6 +230,8 @@ dns:
     "rule-set:AppBlacklist": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:China": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:Direct": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
+    "rule-set:Advertising": rcode://success
+    "rule-set:MyReject": rcode://success
     
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
@@ -251,8 +253,8 @@ dns:
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
-    - RULE-SET,Advertising,fake-ip
-    - RULE-SET,MyReject,fake-ip
+    - RULE-SET,Advertising,real-ip
+    - RULE-SET,MyReject,real-ip
     - RULE-SET,AppBlacklist,real-ip
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
