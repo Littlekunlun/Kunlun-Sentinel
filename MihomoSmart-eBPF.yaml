@@ -230,8 +230,9 @@ dns:
     "rule-set:AppBlacklist": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:China": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:Direct": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
-    "rule-set:Advertising": rcode://success
-    "rule-set:MyReject": rcode://success
+    "rule-set:Advertising": rcode://name_error
+    "rule-set:MyReject": rcode://name_error
+    "rule-set:AntiAD": rcode://name_error
     
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
@@ -255,6 +256,7 @@ dns:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
     - RULE-SET,Advertising,real-ip
     - RULE-SET,MyReject,real-ip
+    - RULE-SET,AntiAD,real-ip
     - RULE-SET,AppBlacklist,real-ip
     - RULE-SET,Direct,real-ip
     - RULE-SET,Private,real-ip
@@ -352,7 +354,7 @@ rules:
 
   - RULE-SET,Advertising,REJECT-DROP
   - RULE-SET,MyReject,REJECT-DROP
-
+  - RULE-SET,AntiAD,REJECT-DROP
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
 
   # ================= AI专用 =================
@@ -492,5 +494,5 @@ rule-providers:
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
   MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
-
+  AntiAD:         {<<: *BehaviorDY, url: https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml}
 # ==================== EOF ====================
