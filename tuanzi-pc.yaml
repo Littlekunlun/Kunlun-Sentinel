@@ -22,7 +22,7 @@ SelectSG: &SelectSG {type: select, proxies: [狮城智能, 默认代理, 故障�
 SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:25500/download/%E5%9B%A2%E5%AD%90?target=ClashMeta', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:25501/KunlunEmpyrean/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
 
 global-ua: "clash.meta"
 mode: rule
