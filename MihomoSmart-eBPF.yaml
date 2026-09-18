@@ -33,7 +33,7 @@ BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-c
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
 
-BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false}
+BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, penalize-unstable: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -274,7 +274,7 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
+  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
 
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
   
