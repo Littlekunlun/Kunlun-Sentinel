@@ -4,7 +4,7 @@
 # 派生自: MihomoSmartProMax-Android-Optimized Rev 7 (Clean & Pure AI)
 # 更新: 2026-09-26 [eBPF-Rev1]
 #
-# ⚠️ 上生产前必须逐条确认（未经你本机验证的项，不要直接信）：
+# 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12.23 不在问题区间。
 # 待确认：
 #   1) Box 是否依赖 redir-port / tproxy-port（保留实测无副作用，是否必需未知）
@@ -332,7 +332,7 @@ rules:
   - DST-PORT,19305,REJECT
   - DST-PORT,5349,REJECT
 
-  - RULE-SET,Private,直接连接
+  - RULE-SET,Private,直接连接,no-resolve
 
   - RULE-SET,Advertising,REJECT-DROP
   - RULE-SET,MyReject,REJECT-DROP
@@ -370,7 +370,6 @@ rules:
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   - RULE-SET,LocationDKS,抖快书定位
-  - RULE-SET,Private,直接连接
   - RULE-SET,Direct,直接连接
   - RULE-SET,XPTV,直接连接
   - DOMAIN-SUFFIX,3gppnetwork.org,UKwifi
