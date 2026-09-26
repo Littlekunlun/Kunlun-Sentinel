@@ -2,31 +2,13 @@
 # 核心要求: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译时必须带 with_ebpf 标签
 # 状态: eBPF hybrid 入站 (local+shared) + 全局 Smart 化 + AI链路大一统
 # 派生自: MihomoSmartProMax-Android-Optimized Rev 7 (Clean & Pure AI)
-# 更新: 2026-08-30 [eBPF-Rev1]
+# 更新: 2026-09-26 [eBPF-Rev1]
 #
 # ⚠️ 上生产前必须逐条确认（未经你本机验证的项，不要直接信）：
-#
-# 1) shared.interface 下面的 "REPLACE_ME_下联网卡名" 必须替换成真实值。
-#    热点开启状态下，用 root/adb shell 跑 `ip -o link show` 或 `ip addr` 核对，
-#    常见候选有 wlan0 / ap0 / swlan0，具体以你设备实测为准，不要照抄别的机型的名字。
-#
-# 2) Box 是否仍需要下面 redir-port / tproxy-port 这两个字段存在（哪怕实际流量走 eBPF）。
-#    本文件保留了这两个字段，因为不确定 Box 解析配置时是否强制要求它们存在；
-#    如果 Box 设置里有单独的"启用 eBPF / 自定义核心"开关，记得同步打开——
-#    这个开关和 yaml 里写不写 listeners 是两件事，缺一不可。
-#
-# 3) Android 系统自己的热点硬件/软件卸载加速 (tethering offload，由 netd 管理) 也挂在 TC 层，
-#    跟 shared 模式要挂的 TC 程序是不是同一个 attach point、会不会冲突，
-#    liuran001/mihomo 项目 README 专门提过这一点(它自带的 cmd/tcclean 工具如果误用，
-#    会连累删掉 Android 自己的 tethering offload 程序)。没有把握的话先跑几天观察日志，
-#    不要直接换生产环境，参照知识库 K13 的日志优先原则。
-#
-# 4) 内核版本：6.6.0～6.6.46 这个区间会导致 bypass-rule-set / include-uid 等基于网段的
-#    策略直接失败报错，核对一下你手机具体内核版本落在哪个区间（低于 5.4 不保证能跑）。
-#
-# 5) 路由/规则逻辑本身（proxy-groups、rules、rule-providers）跟原 TProxy 版完全一致未改动——
-#    eBPF 只改变"流量怎么进核心"这一层，不改变"进核心之后怎么分流"，
-#    所以这部分继续沿用你已经验证过的配置，没有必要跟着重写。
+# 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12.23 不在问题区间。
+# 待确认：
+#   1) Box 是否依赖 redir-port / tproxy-port（保留实测无副作用，是否必需未知）
+#   2) 热点关了再开时，shared 模式 TC 挂载跟系统热点卸载加速会不会冲突（知识库 K21）
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -87,9 +69,9 @@ listeners:
     # 2026-08-30：曾短暂加入过 CNIPv4/CNIPv6（X-Shelby/geoip 个人项目），加入后
     # Google 无法访问——经交叉核对确认该数据源把谷歌的 74.125.16.64/26 网段误标成了
     # 中国 IP，已彻底移除，换成官方维护的 MetaCN。
-    # 注意：fake-ip 段(198.18.0.1/16)永远不受这条影响，会始终进核心——
-    #   这意味着你在 K11 里对 Advertising/MyReject 做的 fake-ip 强制引流广告拦截方案，
-    #   跟这里的 CN-IP 内核旁路是兼容的，不会因为开了这个 bypass 就导致广告拦截失效。
+    # 注意：fake-ip 段(198.18.0.1/16)永远进核心，不受 bypass 影响。
+    #   广告目前走 real-ip + nameserver-policy 的 rcode 拦截，拿不到 IP 自然不会被旁路；
+    #   硬编码国内 IP 的广告会被内核直接放行，这是 eBPF 旁路的已知缺口（知识库 K11、K21）。
     bypass-rule-set:
       - ChinaIP
       - MetaCN
@@ -102,7 +84,7 @@ listeners:
 
     local:
       # cgroup v2 挂载点，一般不用填，会自动探测
-      ipv6-mode: auto             
+      ipv6-mode: auto    # 新版里 auto 等于开启 IPv6 拦截（作者文档），不再是探测出口         
       include-android-user: [0, 10]   # 对齐你原配置里 tun 段的用户范围(主用户+工作/分身)
       # 可选加固项，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围里排除，
       # 让基带/VoLTE 流量在内核层面就不进入重定向逻辑，是 K8 三层修复方案之外
