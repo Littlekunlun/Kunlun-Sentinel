@@ -102,7 +102,7 @@ listeners:
 
     local:
       # cgroup v2 挂载点，一般不用填，会自动探测
-      ipv6-mode: auto              # 探测到本机有可用 IPv6 出口才接管，比 always 更保守安全
+      ipv6-mode: auto             
       include-android-user: [0, 10]   # 对齐你原配置里 tun 段的用户范围(主用户+工作/分身)
       # 可选加固项，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围里排除，
       # 让基带/VoLTE 流量在内核层面就不进入重定向逻辑，是 K8 三层修复方案之外
@@ -350,12 +350,13 @@ rules:
   - DST-PORT,19305,REJECT
   - DST-PORT,5349,REJECT
 
-  - RULE-SET,Private,直接连接,no-resolve
+  - RULE-SET,Private,直接连接
 
   - RULE-SET,Advertising,REJECT-DROP
   - RULE-SET,MyReject,REJECT-DROP
   - RULE-SET,AntiAD,REJECT-DROP
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
+  - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMediaIP)),社交平台
 
   # ================= AI专用 =================
   - DOMAIN-SUFFIX,claude.ai,AI专用
