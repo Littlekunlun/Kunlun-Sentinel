@@ -204,6 +204,9 @@ dns:
     - 1.0.0.1
   
   nameserver-policy:
+    "rule-set:Advertising": rcode://name_error
+    "rule-set:MyReject": rcode://name_error
+    "rule-set:AntiAD": rcode://name_error
     "+.miwifi.com": "dhcp://system"
     "dns.alidns.com": [223.5.5.5, 223.6.6.6]
     "doh.pub": [1.12.12.12, 120.53.53.53]
@@ -212,9 +215,6 @@ dns:
     "rule-set:AppBlacklist": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:China": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:Direct": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
-    "rule-set:Advertising": rcode://name_error
-    "rule-set:MyReject": rcode://name_error
-    "rule-set:AntiAD": rcode://name_error
     
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
