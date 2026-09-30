@@ -1,14 +1,18 @@
 # 名称: MihomoSmartProMax-Android-eBPF (liuran001 eBPF Inbound Variant)
-# 核心要求: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译时必须带 with_ebpf 标签
-# 状态: eBPF hybrid 入站 (local+shared) + 全局 Smart 化 + AI链路大一统
-# 派生自: MihomoSmartProMax-Android-Optimized Rev 7 (Clean & Pure AI)
-# 更新: 2026-09-26 [eBPF-Rev1]
+# 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
+# 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
+# 更新: 2026-09-30 [eBPF-Rev2]
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12.23 不在问题区间。
 # 待确认：
 #   1) Box 是否依赖 redir-port / tproxy-port（保留实测无副作用，是否必需未知）
 #   2) 热点关了再开时，shared 模式 TC 挂载跟系统热点卸载加速会不会冲突（知识库 K21）
+#
+# 维护提醒（详见知识库 K11、K15、K21）：
+#   - dns.nameserver-policy 从上往下匹配、先命中先生效：广告的 rcode 三行必须排在 China/Direct 之前
+#   - dns.fake-ip-filter 同样先命中先生效：广告规则集必须是 real-ip，并排在 China/Direct 之前
+#   - 改 eBPF 段里除 udp-timeout / bypass-rule-set 之外的任何键，都会重建入站，所有连接会断一下
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -54,53 +58,49 @@ listeners:
   - {name: MIXED-EU, type: mixed, listen: 127.0.0.1, port: 50006, udp: true, proxy: 欧洲智能}
   - {name: MIXED-AL, type: mixed, listen: 127.0.0.1, port: 50007, udp: true, proxy: 一键智能}
 
-  # ---------------- eBPF 透明入站 (新增，本文件的核心改动) ----------------
-  # mode: hybrid = 本机 App 流量(local) + 热点转发给下联设备的流量(shared) 都接管
+  # ---------------- eBPF 透明入站 ----------------
+  # 写法遵循核心文档 docs/ebpf-inbound.md 的标准格式；没写出来的键都用核心默认值。
+  # 用不上的项不写：bypass-tun-direct（没有 TUN）、fakeip-icmp（只让 ping fake-ip 有回应，不代表能连通）。
   - name: ebpf-in
     type: ebpf
-    mode: hybrid
+    mode: hybrid                 # local(本机 App) + shared(热点下联设备) 都接管
     network: [tcp, udp]
-    dns-mode: hijack              # 53 端口无条件劫持进核心，不受下面 bypass-rule-set 影响
-    udp-timeout: 300
+    udp-timeout: 300             # 秒，默认 300、下限 5；改它可热更新，不重建入站
+    tc-priority: 1               # 1 = 内核支持时用 TCX（本机 6.12 支持），否则回退 clsact；其它值一律走 clsact
 
-    # 命中以下 ipcidr 规则集的目标地址，直接在内核放行，不进核心。
-    # ChinaIP 复用原有 rule-providers；MetaCN 是新增的 MetaCubeX/meta-rules-dat 官方数据源，
-    # 两者范围有重叠，属于交叉覆盖，不冲突。
-    # 2026-08-30：曾短暂加入过 CNIPv4/CNIPv6（X-Shelby/geoip 个人项目），加入后
-    # Google 无法访问——经交叉核对确认该数据源把谷歌的 74.125.16.64/26 网段误标成了
-    # 中国 IP，已彻底移除，换成官方维护的 MetaCN。
-    # 注意：fake-ip 段(198.18.0.1/16)永远进核心，不受 bypass 影响。
-    #   广告目前走 real-ip + nameserver-policy 的 rcode 拦截，拿不到 IP 自然不会被旁路；
-    #   硬编码国内 IP 的广告会被内核直接放行，这是 eBPF 旁路的已知缺口（知识库 K11、K21）。
+    # 命中下列 ipcidr 规则集的目标地址，直接在内核放行，不进核心；本机和热点两个角色共用。
+    # 两个数据源范围有重叠，属于交叉覆盖，不冲突；规则集内容按各自 interval 更新，会自动进内核，不需要重载。
+    # 新增旁路数据源前，先拿 Google、Cloudflare 这类境外网段做一次重叠检查：
+    # 2026-08 试过 X-Shelby/geoip，它把 Google 的 74.125.16.64/26 标成了中国 IP，Google 直接打不开。
+    # fake-ip 段(198.18.0.1/16)永远进核心，不受旁路影响；广告走 real-ip + rcode，拿不到 IP 就不会被旁路。
+    # 已知缺口：写死 IP 且落在国内网段的广告，会被内核直接放行（知识库 K11、K21）。
     bypass-rule-set:
       - ChinaIP
       - MetaCN
 
-    # 2026-08-30：多天实测确认运行正常，已从项目默认建议的 false 改为 true——
-    # 私网地址(10/8、192.168/16 等)直接在内核放行，不进核心，不进 Zashboard 连接记录。
-    # 代价是下联设备之间/下联设备访问网关本身这部分流量的统计会看不到，
-    # 如果之后需要排查下联互访相关问题，记得这是第一个要回头检查的开关。
-    bypass-private-address: true
-
     local:
-      # cgroup v2 挂载点，一般不用填，会自动探测
-      ipv6-mode: auto    # 新版里 auto 等于开启 IPv6 拦截（作者文档），不再是探测出口         
-      include-android-user: [0, 10]   # 对齐你原配置里 tun 段的用户范围(主用户+工作/分身)
-      # 可选加固项，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围里排除，
-      # 让基带/VoLTE 流量在内核层面就不进入重定向逻辑，是 K8 三层修复方案之外
-      # 更底层的一道保险。是否加，取决于你要不要在内核层再做一次保护——
-      # 不加也不影响 K8 现有的 rules 层修复，两者不冲突，纯粹是要不要叠加。
+      data-plane: cgroup         # cgroup(默认) | tc。Android 15+ 下 cgroup 会接管 netd 的钩子，正常停止核心时归还；别强杀核心（知识库 K21）
+      dns-mode: hijack           # 53 端口无条件劫持进核心，先于任何旁路策略
+      # ipv6 的含义是"要不要接管 IPv6 流量"，不是"要不要支持 IPv6"。核心层的 IPv6 已经关了（顶层 ipv6:false、dns.ipv6:false，不下发 AAAA）。
+      # 这里保持 true：日志里 Telegram 写死的 IPv6 数据中心地址（45 小时 887 条）会被核心接住、按规则处理，失败率 7.8%，和 IPv4 的 5.5% 相近。
+      # 改成 false 则这些连接不经代理，直接从物理网卡发出，会被墙卡住，Telegram 要等超时才回退 IPv4。
+      ipv6: true
+      bypass-private-address: true   # 私网地址(10/8、192.168/16 等)在内核放行，不进核心也不进 Zashboard 连接记录；排查下联互访问题时先想到它
+      include-android-user: [0, 10]  # 主用户 + 分身/工作用户
+      # 可选加固，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围排除，基带/VoLTE 流量在内核层就不进入重定向。
+      # 是 rules 层 UID,1001,DIRECT 之外更底层的一道保险，两者不冲突，纯粹是要不要叠加（知识库 K8）。
       # exclude-uid: [1001]
-      state-capacity: 32768        # 日志里出现 "map ... is 85.0% full" 再考虑调大
+      state-capacity: 32768      # 旧键，新格式里没有对应项，源码里仍然生效；去掉会让 UDP peer/flow 表缩到默认的 16384。日志出现 "map ... is 85.0% full" 再考虑调大
 
     shared:
-      # 已通过 dumpsys wifi 确认：mApInterfaceName: wlan2, mRole: ROLE_SOFTAP_TETHERED
-      # 如果以后换机型/换 ROM，这个名字大概率会变，出问题先重新跑一遍 dumpsys wifi 核对
+      # 已通过 dumpsys wifi 确认：mApInterfaceName: wlan2, mRole: ROLE_SOFTAP_TETHERED，只在热点开着时存在。
+      # 换机型/换 ROM 后这个名字大概率会变，出问题先重新跑一遍 dumpsys wifi 核对。
+      data-plane: packet_rewrite # packet_rewrite(默认) | socket_assign
+      dns-mode: hijack
       interface: [wlan2]
-      ipv6-mode: always
-      state-capacity: 32768
-      advanced:
-        tc-priority: 1              # 和 Android 自身 tethering offload 等程序冲突时再调
+      ipv6: true                 # 含义同 local.ipv6；热点客机（如电脑）的 Telegram 同样会走写死的 IPv6 地址
+      bypass-private-address: true
+      state-capacity: 32768      # 同 local.state-capacity；去掉会让热点 bypass 表缩到默认的 16384
 
 # ==================== 核心配置 ====================
 global-ua: "clash.meta"
@@ -110,7 +110,7 @@ socks-port: 7891
 redir-port: 9797
 mixed-port: 7893
 tproxy-port: 9898
-ipv6: false    
+ipv6: false                      # 核心层关闭 IPv6（节点不支持）；这不等于 eBPF 不接管 IPv6，见 ebpf-in.local.ipv6
 allow-lan: true
 unified-delay: true
 tcp-concurrent: true
@@ -140,7 +140,7 @@ profile:
 
 sniffer:
   enable: true
-  override-destination: false 
+  override-destination: false
   force-dns-mapping: true
   parse-pure-ip: true
   sniff:
@@ -160,28 +160,11 @@ sniffer:
     - "+.xunyou.mobi"
     - "+.3gppnetwork.org"
 
-# ==================== TUN 配置 (eBPF 场景下保持关闭) ====================
-# 本文件走 eBPF 透明入站，不需要 TUN；如果你以后想 eBPF + TUN 同开(liuran001 项目
-# 支持这种组合)，需要参照该项目 README「和 TUN 共存」章节额外配置
-# bypass-tun-direct / strict-route 等参数，本文件暂不涉及。
+# ==================== TUN（不使用） ====================
+# eBPF 入站已经接管本机和热点流量，TUN 用不上；显式写 false，防止被外部工具或默认值打开。
 tun:
   enable: false
-  mtu: 9000
-  device: meta
-  stack: gvisor 
-  dns-hijack:
-    - any:53
-    - tcp://any:53
-  udp-timeout: 300
-  auto-route: true
-  strict-route: true
-  auto-redirect: false
-  endpoint-independent-nat: true
-  auto-detect-interface: true
-  include-android-user: [0, 10]
-  exclude-uid: []
-  include-uid: []
- 
+
 hosts:
   miwifi.com: 192.168.31.2
   services.googleapis.cn: services.googleapis.com
@@ -189,20 +172,23 @@ hosts:
 # ==================== DNS 配置 ====================
 dns:
   enable: true
-  ipv6: false   
+  ipv6: false
   use-hosts: true
   use-system-hosts: true
   cache-algorithm: arc
   cache-capacity: 4096
   prefer-h3: false
   listen: 0.0.0.0:1053
-  
+
   default-nameserver:
     - 223.5.5.5
     - 1.12.12.12
     - 8.8.8.8
     - 1.0.0.1
-  
+
+  # 从上往下匹配，先命中先生效。广告的 rcode 必须排在最上面：
+  # 国内广告域名几乎都同时在 China 列表里，排在 China 下面会先被 China 截走、拿到国内真实 IP，
+  # 再被 eBPF 的国内旁路在内核放行，规则层的拦截永远碰不到（知识库 K11、K15）。
   nameserver-policy:
     "rule-set:Advertising": rcode://name_error
     "rule-set:MyReject": rcode://name_error
@@ -215,24 +201,25 @@ dns:
     "rule-set:AppBlacklist": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:China": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
     "rule-set:Direct": [https://dns.alidns.com/dns-query, https://doh.pub/dns-query]
-    
+
   fake-ip-range: 198.18.0.1/16
   enhanced-mode: fake-ip
   respect-rules: true
-  
+
   nameserver:
     - https://dns.google/dns-query
     - https://cloudflare-dns.com/dns-query
-    
+
   proxy-server-nameserver:
     - https://223.5.5.5/dns-query
     - https://1.12.12.12/dns-query
-    
+
   direct-nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
     - https://doh.360.cn/dns-query
-    
+
+  # rule 模式同样先命中先生效。广告三行必须是 real-ip（写成 fake-ip 的话上面的 rcode 就轮不到了），并排在 China/Direct 前面。
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
@@ -244,7 +231,7 @@ dns:
     - RULE-SET,Private,real-ip
     - RULE-SET,China,real-ip
     - RULE-SET,fakeip-filter,real-ip
-    - RULE-SET,GoogleFCM,real-ip 
+    - RULE-SET,GoogleFCM,real-ip
     - DOMAIN-SUFFIX,3gppnetwork.org,real-ip
     - DOMAIN-SUFFIX,miwifi.com,real-ip
     - DOMAIN-SUFFIX,docker.io,real-ip
@@ -252,16 +239,16 @@ dns:
     - DOMAIN-SUFFIX,push.apple.com,real-ip
     - MATCH,fake-ip
 
-# ==================== 代理策略组 (与原 TProxy 版完全一致，未做改动) ====================
+# ==================== 代理策略组 ====================
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
   - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
 
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
-  
+
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
-  
+
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
@@ -273,7 +260,7 @@ proxy-groups:
 
   - {name: 网络测试,     <<: *SelectPY, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Speedtest.png}
   - {name: UKwifi,       type: select, proxies: [DIRECT, 欧洲智能, 英国智能], icon: https://www.giffgaff.design/iconography/icons/library/coverage-signal.svg}
-  
+
   - {name: 抖快书定位,   type: select, proxies: [直接连接, 香港智能, 台湾智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 欧洲智能], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Null_Nation.png}
 
   - {name: Emby服,      <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Emby.png}
@@ -287,12 +274,12 @@ proxy-groups:
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
 
   - {name: 人工智能,     type: select, proxies: [AI专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
-  
+
   - {name: 货币平台,     <<: *SelectSG, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/Bitcloud.png}
   - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
   - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
-  
+
   - {name: 谷歌服务,     type: select, proxies: [AI专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
   - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
 
@@ -308,13 +295,13 @@ proxy-groups:
   - {name: 英国智能,  <<: *BaseSmart, filter: *FilterUK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_Kingdom.png}
   - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
-# ==================== 规则路由 (与原 TProxy 版完全一致，未做改动) ====================
+# ==================== 规则路由 ====================
 rules:
 
   - DST-PORT,5228,GoogleFCM
   - DST-PORT,5229,GoogleFCM
   - DST-PORT,5230,GoogleFCM
-  
+
   - UID,1001,DIRECT
   - PROCESS-NAME,com.android.phone,DIRECT
   - PROCESS-NAME,com.android.server.telecom,DIRECT
@@ -334,6 +321,7 @@ rules:
 
   - RULE-SET,Private,直接连接,no-resolve
 
+  # 广告用 REJECT，不用 REJECT-DROP：DROP 会让连接挂 60 秒才断，App 等广告加载时会卡住（知识库 K4）
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
   - RULE-SET,AntiAD,REJECT
@@ -366,7 +354,7 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,TelegramIP)),电报消息
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
-  
+
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   - RULE-SET,LocationDKS,抖快书定位
@@ -378,9 +366,9 @@ rules:
   - RULE-SET,AppleCN,直接连接
 
   - DOMAIN-REGEX,^r+[0-9]+(---|\.)sn-(2x3|ni5|j5o)\w{5}\.xn--ngstr-lra8j\.com$,直接连接
-  - RULE-SET,GoogleFCM,谷歌服务 
+  - RULE-SET,GoogleFCM,谷歌服务
   - RULE-SET,AI,人工智能
-  
+
   - DOMAIN-KEYWORD,speedtest,网络测试
   - RULE-SET,Speedtest,网络测试
   - RULE-SET,Twitter,推特社交
@@ -420,7 +408,7 @@ rules:
 
   - MATCH,兜底流量
 
-# ==================== 规则集 (与原 TProxy 版完全一致；ChinaIP 被 eBPF listener 复用) ====================
+# ==================== 规则集（ChinaIP、MetaCN 同时被 eBPF 入站用作内核旁路） ====================
 BehaviorDN: &BehaviorDN {type: http, behavior: domain, format: mrs, interval: 86400}
 BehaviorDY: &BehaviorDY {type: http, behavior: domain, format: yaml, interval: 86400}
 BehaviorIP: &BehaviorIP {type: http, behavior: ipcidr, format: mrs, interval: 86400}
@@ -472,9 +460,9 @@ rule-providers:
   ChinaIP:        {<<: *BehaviorIP, url: https://gh-proxy.org/https://github.com/666OS/rules/raw/release/mihomo/ip/China.mrs}
   MetaCN:         {<<: *BehaviorIP, url: https://v6.gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs}
 
-  ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/wificalling-gb.list}
+  ukwifi:          {<<: *ClassicalText, url: https://gh-proxy.org/https://raw.githubusercontent.com/HenryChiao/the_clash_ruleset/main/The_Location_rule-set/Wi-Fi_Calling_rule-set/wificalling-uk.list}
   github:          {<<: *ClassicalYaml, url: https://rule.kelee.one/Clash/GitHub.yaml}
   MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
-  AntiAD: {<<: *BehaviorDY, url: https://gh-proxy.org/https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml}
+  AntiAD:          {<<: *BehaviorDY, url: https://gh-proxy.org/https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml}
 # ==================== EOF ====================
