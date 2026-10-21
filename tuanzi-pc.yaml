@@ -1,6 +1,7 @@
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false}
+# prefer-udp / penalize-unstable 是 liuran001/mihomo 分支专有字段，换回 vernesong 原版核心前必须删掉，否则启动失败
+BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, prefer-udp: true, penalize-unstable: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -151,7 +152,7 @@ dns:
     - MATCH,fake-ip
 
 proxy-groups:
-  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
+  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-udp: true, penalize-unstable: true, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
