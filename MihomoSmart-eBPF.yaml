@@ -1,9 +1,10 @@
 # 名称: MihomoSmartProMax-Android-eBPF (liuran001 eBPF Inbound Variant)
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-10-26 [eBPF-Rev3]
+# 更新: 2026-10-26 [eBPF-Rev4]
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
+# Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12.23 不在问题区间。
@@ -258,9 +259,11 @@ proxy-groups:
   # AI专用：Claude / Anthropic / OpenAI（经 人工智能）。Gemini 已拆出去，不再共用这一组。
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
 
-  # Gemini专用：默认走 美国-ION引擎；想固定节点就直接在这一组里点具体节点（列表末尾那些 ION 节点），
-  # 选择状态只属于这一组，不会影响 AI专用 / 谷歌服务。别在这里选「手动选择」再去固定节点：手动选择 是共用的组，会连带 AI专用。
-  - {name: Gemini专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  # Gemini专用：smart 组，节点直接挂在组里，和 美国-ION引擎 用同一条 FilterUSION（节点完全一致），不引用任何其它组。
+  # 平时不点节点 = 这一组自己择优（显示 Smart - Select）；想固定就在 Zashboard 里点具体节点，固定状态只属于这一组，不牵连 AI专用 / 谷歌服务。
+  # 注意：对这一组点「整组测速」会解除固定（核心 getGroupDelay 的行为，url-test/smart/fallback 都一样）；测单个节点的延迟不影响。
+  # 固定的节点从订阅里消失（改名/下线）时，会自动回到择优，不会卡死在一个不存在的节点上。
+  - {name: Gemini专用, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
