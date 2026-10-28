@@ -1,6 +1,6 @@
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-# prefer-udp / penalize-unstable 是 liuran001/mihomo 分支专有字段，换回 vernesong 原版核心前必须删掉，否则启动失败
+# prefer-udp / penalize-unstable 是 liuran001/mihomo 分支专有字段（BaseSmart、美国-ION引擎、Gemini专用 都用到了），换回 vernesong 原版核心前必须全部删掉，否则启动失败
 BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, prefer-udp: true, penalize-unstable: true}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -14,6 +14,8 @@ FilterEU: &FilterEU '^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|
 FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))'
 FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
 FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
+# 美国 ION 节点：「美国-ION引擎」和「Gemini专用」共用这一条，改一处两边同步
+FilterUSION: &FilterUSION '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$'
 
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
@@ -114,6 +116,7 @@ dns:
     - 1.12.12.12
   nameserver-policy:
     "+.miwifi.com": "dhcp://system"
+    "+.gstatic.com": [https://8.8.8.8/dns-query, https://1.1.1.1/dns-query]
     "+.msftconnecttest.com": [https://223.5.5.5/dns-query, https://1.12.12.12/dns-query]
     "+.msftncsi.com": [https://223.5.5.5/dns-query, https://1.12.12.12/dns-query]
     "rule-set:AppBlacklist": [https://223.5.5.5/dns-query, https://1.12.12.12/dns-query]
@@ -152,9 +155,15 @@ dns:
     - MATCH,fake-ip
 
 proxy-groups:
-  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-udp: true, penalize-unstable: true, use: [团子机场], filter: '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$', icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
+  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-udp: true, penalize-unstable: true, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
   - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
-  - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  # AI专用：Claude / Anthropic / OpenAI（经 人工智能）。Gemini 已拆出去，不再共用这一组，避免 Gemini 固定/换节点牵连 Claude
+  - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
+  # Gemini专用：smart 组，节点直接挂在组里，和 美国-ION引擎 用同一条 FilterUSION（节点完全一致），不引用任何其它组。
+  # 平时不点节点 = 这一组自己择优；某个节点 Gemini 报错/"送中"时，在 Zashboard 里点具体节点固定，固定状态只属于这一组。
+  # 注意：对被固定的组点"整组测速"会把固定清掉，想保住固定就别对这一组整组测速。
+  # 「谷歌服务」默认也指向这一组，所以 Google 的静态资源/接口/账号域名会和 gemini.google.com 同一出口。
+  - {name: Gemini专用, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 故障转移,     <<: *BaseFB, proxies: [香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 手动选择, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
@@ -178,7 +187,7 @@ proxy-groups:
   - {name: 游戏平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
   - {name: Github,       <<: *SelectPY, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/04ProxySoft/github(1).png}
   - {name: 微软服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
-  - {name: 谷歌服务,     type: select, proxies: [AI专用], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
+  - {name: 谷歌服务,     type: select, proxies: [Gemini专用, AI专用, 默认代理], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
   - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
   - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
   - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
@@ -209,9 +218,15 @@ rules:
   - RULE-SET,AppBlacklist,直接连接
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
-  - RULE-SET,Gemini,AI专用
-  - DOMAIN-KEYWORD,gemini.google,AI专用
-  - DOMAIN-KEYWORD,bard.google,AI专用
+  - RULE-SET,Gemini,Gemini专用
+  - DOMAIN-KEYWORD,gemini.google,Gemini专用
+  - DOMAIN-KEYWORD,bard.google,Gemini专用
+  # Direct 规则集里带着 www.gstatic.com（和 connectivitycheck.gstatic.com），Gemini 页面的脚本/字体/图标/图片都靠它；
+  # 国内直连这个域名会被重置，必须排在 RULE-SET,Direct 前面把它拉回代理，并且和 Gemini 同一出口
+  - DOMAIN-SUFFIX,gstatic.com,谷歌服务
+  # Gemini 网页还会调 geminiweb-pa.clients6.google.com 这类接口，它们同时在 AI 规则集里，会被后面的 RULE-SET,AI 抢去 Claude 那个池，
+  # 和 gemini.google.com 不是同一出口；把 google.com 整体提前收进 谷歌服务 就不会被抢（Google 规则集本来也是这个去向）
+  - DOMAIN-SUFFIX,google.com,谷歌服务
   - DOMAIN-SUFFIX,chatgpt.com,人工智能
   - DOMAIN-SUFFIX,openai.com,人工智能
   - DOMAIN-SUFFIX,oaistatic.com,人工智能
