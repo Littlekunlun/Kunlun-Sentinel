@@ -1,7 +1,7 @@
 # 名称: MihomoSmartProMax-Android-eBPF (liuran001 eBPF Inbound Variant)
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-10-30 [eBPF-Rev8]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-10-30 [eBPF-Rev9]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -11,6 +11,8 @@
 #            Rev5 草稿里「Gemini 的 UDP443 改拒绝」那 5 行实验已否决、不进配置：同一批节点上 Claude 的 QUIC 22/22 成功，没有证据说明 QUIC 是 Gemini 出错的原因
 # Rev8 变更：只改 FilterUK 一行，分流规则一条没动。原来的写法不认 🇬🇧 旗帜、London、Britain，
 #            且 UK 两个字母会匹配 Ukraine 之类；现在补上旗帜/城市/英文国名，UK 要求前后不是字母，「精英」不再算英国。
+# Rev9 变更：只加一条 PROCESS-NAME,org.telegram.messenger,电报消息，放在另外两个 Telegram 进程规则旁边。
+#            原因：官网 APK（.web）和 Extera 已有进程规则，Play 版官方客户端没有，它连 194.221.250.50 这类不在 TelegramIP 里的地址时会掉进 MATCH。
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
@@ -446,6 +448,7 @@ rules:
 
   - PROCESS-NAME,com.exteraless.app,电报消息
   - PROCESS-NAME,org.telegram.messenger.web,电报消息
+  - PROCESS-NAME,org.telegram.messenger,电报消息   # Play 商店版官方客户端（.web 是官网 APK）；一加平板日志里它有 988 次落到 MATCH
 
   - MATCH,兜底流量
 
