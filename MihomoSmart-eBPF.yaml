@@ -1,7 +1,7 @@
 # 名称: MihomoSmartProMax-Android-eBPF (liuran001 eBPF Inbound Variant)
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-10-30 [eBPF-Rev9]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-01 [eBPF-Rev10]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -12,6 +12,9 @@
 # Rev8 变更：只改 FilterUK 一行，分流规则一条没动。原来的写法不认 🇬🇧 旗帜、London、Britain，
 #            且 UK 两个字母会匹配 Ukraine 之类；现在补上旗帜/城市/英文国名，UK 要求前后不是字母，「精英」不再算英国。
 # Rev9 变更：只加一条 PROCESS-NAME,org.telegram.messenger,电报消息，放在另外两个 Telegram 进程规则旁边。
+# Rev10 变更：只改 dns.default-nameserver，分流规则一条没动。原来是 4 个明文 UDP 53 的公共解析器，家里 Wi-Fi 上它们全被丢包
+#            （路由器自己的 DNS 能答，223.5.5.5/1.12.12.12/8.8.8.8 的 UDP 53 都没回包，TCP 443 是通的），DoH 域名没法自举，直连全断；
+#            现在前面加了两个「按 IP 的 DoH」（走 TCP 443，不依赖 UDP 53），明文的留作备份，并发请求谁先成功用谁。
 #            原因：官网 APK（.web）和 Extera 已有进程规则，Play 版官方客户端没有，它连 194.221.250.50 这类不在 TelegramIP 里的地址时会掉进 MATCH。
 #
 # 状态记录：
@@ -192,7 +195,11 @@ dns:
   prefer-h3: false
   listen: 0.0.0.0:1053
 
+  # DoH 主机名（dns.alidns.com、doh.pub、dns.google……）靠这里自举。只写明文 UDP 53 的话，遇到丢 UDP 53 的网络就整条链断掉；
+  # 所以前面放两个按 IP 访问的 DoH（TCP 443，主机部分必须是 IP，核心会检查），明文的留着当备份，这几项是并发请求，谁先成功用谁。
   default-nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.12.12.12/dns-query
     - 223.5.5.5
     - 1.12.12.12
     - 8.8.8.8
