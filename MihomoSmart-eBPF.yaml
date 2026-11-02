@@ -1,7 +1,7 @@
-# 名称: MihomoSmartProMax-Android-eBPF (liuran001 eBPF Inbound Variant)
+# 名称: MihomoSmart-eBPF
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-01 [eBPF-Rev10]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-02 [eBPF-Rev12]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -12,10 +12,18 @@
 # Rev8 变更：只改 FilterUK 一行，分流规则一条没动。原来的写法不认 🇬🇧 旗帜、London、Britain，
 #            且 UK 两个字母会匹配 Ukraine 之类；现在补上旗帜/城市/英文国名，UK 要求前后不是字母，「精英」不再算英国。
 # Rev9 变更：只加一条 PROCESS-NAME,org.telegram.messenger,电报消息，放在另外两个 Telegram 进程规则旁边。
+#            原因：官网 APK（.web）和 Extera 已有进程规则，Play 版官方客户端没有，它连 194.221.250.50 这类不在 TelegramIP 里的地址时会掉进 MATCH。
 # Rev10 变更：只改 dns.default-nameserver，分流规则一条没动。原来是 4 个明文 UDP 53 的公共解析器，家里 Wi-Fi 上它们全被丢包
 #            （路由器自己的 DNS 能答，223.5.5.5/1.12.12.12/8.8.8.8 的 UDP 53 都没回包，TCP 443 是通的），DoH 域名没法自举，直连全断；
 #            现在前面加了两个「按 IP 的 DoH」（走 TCP 443，不依赖 UDP 53），明文的留作备份，并发请求谁先成功用谁。
-#            原因：官网 APK（.web）和 Extera 已有进程规则，Play 版官方客户端没有，它连 194.221.250.50 这类不在 TelegramIP 里的地址时会掉进 MATCH。
+# Rev11 变更：只改 hosts 里 miwifi.com 的地址，192.168.31.2 → 192.168.31.1（路由器实际是 .1，.2 上没有路由器页面，miwifi.com 因此打不开）。
+# Rev12 变更：只清理从没生效过的键和过时注释，分流规则、DNS 解析行为、eBPF 段的取值一条没动：
+#            ① dns.cache-capacity 不是核心认的键（核心只认 cache-max-size，写了被静默忽略），改成 cache-max-size: 4096（等于默认值，行为不变）；
+#            ② 团子 provider 的 override.client-fingerprint 不是核心 override 支持的键，一直被静默忽略，删掉
+#               （要真给节点加指纹，得写 override-expr: ['.client-fingerprint = "chrome"']，那会改变节点行为，需要时单独评估）；
+#            ③ sniffer.skip-domain 里的 "Mijia Cloud" 是带空格的串，永远匹配不到真实域名，删掉；
+#            ④ tc-priority 的注释更正：任何优先级只要内核/权限允许都走 TCX，不再只有 1；
+#            ⑤ 文件名注释改成 MihomoSmart-eBPF；Rev9 的原因说明挪回 Rev9；末尾补换行。
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
@@ -59,7 +67,7 @@ SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障�
 
 # ==================== 代理提供者 ====================
 proxy-providers:
-  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:3001/KunlunEmpyrean/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] ', client-fingerprint: chrome}}
+  团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:3001/KunlunEmpyrean/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] '}}
 
 # ==================== 监听器 ====================
 listeners:
@@ -81,7 +89,7 @@ listeners:
     mode: hybrid                 # local(本机 App) + shared(热点下联设备) 都接管
     network: [tcp, udp]
     udp-timeout: 300             # 秒，默认 300、下限 5；改它可热更新，不重建入站
-    tc-priority: 1               # 1 = 内核支持时用 TCX（本机 6.12 支持），否则回退 clsact；其它值一律走 clsact
+    tc-priority: 1               # 越小越先跑；内核（6.6 起）和权限允许有序挂载时，任何优先级都用 TCX，否则回退 clsact；同优先级按挂载顺序
 
     # 命中下列 ipcidr 规则集的目标地址，直接在内核放行，不进核心；本机和热点两个角色共用。
     # 两个数据源范围有重叠，属于交叉覆盖，不冲突；规则集内容按各自 interval 更新，会自动进内核，不需要重载。
@@ -164,7 +172,6 @@ sniffer:
     TLS:
       ports: [443, 8443]
   skip-domain:
-    - "Mijia Cloud"
     - "+.push.apple.com"
     - "+.google.com"
     - "+.googleapis.com"
@@ -181,7 +188,7 @@ tun:
   enable: false
 
 hosts:
-  miwifi.com: 192.168.31.2
+  miwifi.com: 192.168.31.1
   services.googleapis.cn: services.googleapis.com
 
 # ==================== DNS 配置 ====================
@@ -191,7 +198,7 @@ dns:
   use-hosts: true
   use-system-hosts: true
   cache-algorithm: arc
-  cache-capacity: 4096
+  cache-max-size: 4096
   prefer-h3: false
   listen: 0.0.0.0:1053
 
