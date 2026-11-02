@@ -1,7 +1,7 @@
 # 名称: MihomoSmart-eBPF
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-02 [eBPF-Rev13]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-02 [eBPF-Rev14]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -28,6 +28,10 @@
 #            dhcp://system 在核心里等于 system 客户端，只会读 /etc/resolv.conf，安卓上没有这个文件（2026-11-02 实测报
 #            failed to read /etc/resolv.conf），这条一直是失败的。改成直接问路由器（明文 UDP 53，路由器一定回包），不再依赖那个文件；
 #            不在家里网络时这条查询会失败，跟改之前一样，只影响 miwifi.com 的子域名，miwifi.com 本身走 hosts。
+# Rev14 变更：机场新增「超级节点」，和 ION 同一档、都是美国节点。只改 FilterION、FilterUSION 两条过滤器，其余一行没动：
+#            名字里带「超级节点」的也算进来，所以 团子招牌ION主用组、美国-ION引擎、Gemini专用 现在都包含 ION 和 超级节点两类；
+#            AI专用 引用的是 美国-ION引擎，也跟着一起带上。超级节点按「都是美国节点」处理，不再要求名字里有 美/US；
+#            延迟/倍 的排除规则保持各自原样（美国那条排除 延迟、倍；团子招牌那条只排除 延迟）。
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
@@ -58,9 +62,10 @@ FilterEU: &FilterEU '^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|
 FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))'
 FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
 
-FilterION: &FilterION '^(?i)(?=.*ION)(?!.*延迟).*$'
-# 美国 ION 节点：「美国-ION引擎」和「Gemini专用」共用同一条，改一处两边同步
-FilterUSION: &FilterUSION '^(?i)(?=.*(美|US))(?=.*ION)(?!.*(延迟|倍)).*$'
+FilterION: &FilterION '^(?i)(?=.*(?:ION|超级节点))(?!.*延迟).*$'
+# 美国 ION + 超级节点：「美国-ION引擎」和「Gemini专用」共用同一条，改一处两边同步。
+# ION 节点要求名字里有 美/US；超级节点都是美国节点，不再要求
+FilterUSION: &FilterUSION '^(?i)(?:(?=.*(?:美|US))(?=.*ION)|(?=.*超级节点))(?!.*(?:延迟|倍)).*$'
 
 # 区域策略组底层继承配置 (已统一使用 手动选择)
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
