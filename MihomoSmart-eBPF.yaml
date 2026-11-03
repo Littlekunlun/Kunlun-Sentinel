@@ -473,8 +473,6 @@ rules:
   - PROCESS-NAME,org.telegram.messenger.web,电报消息
   - PROCESS-NAME,org.telegram.messenger,电报消息   # Play 商店版官方客户端（.web 是官网 APK）；一加平板日志里它有 988 次落到 MATCH
 
-  - DOMAIN,wsx666.dpdns.org,直接连接
-
   - MATCH,兜底流量
 
 # ==================== 规则集（ChinaIP、MetaCN 同时被 eBPF 入站用作内核旁路） ====================
