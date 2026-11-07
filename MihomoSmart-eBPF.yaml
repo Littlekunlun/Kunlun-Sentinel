@@ -1,7 +1,7 @@
 # 名称: MihomoSmart-eBPF
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-02 [eBPF-Rev14]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-07 [eBPF-Rev15]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -32,6 +32,13 @@
 #            名字里带「超级节点」的也算进来，所以 团子招牌ION主用组、美国-ION引擎、Gemini专用 现在都包含 ION 和 超级节点两类；
 #            AI专用 引用的是 美国-ION引擎，也跟着一起带上。超级节点按「都是美国节点」处理，不再要求名字里有 美/US；
 #            延迟/倍 的排除规则保持各自原样（美国那条排除 延迟、倍；团子招牌那条只排除 延迟）。
+# Rev15 变更：只加一条 DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用，放在 Rev5 那组 Gemini 后端域名里（全局 UDP443 拒绝之后、
+#            RULE-SET,AI 之前），其余一行没动，并把旁边注释里“generativelanguage 仍走 人工智能”那半句删掉。
+#            原因：Operit（com.ai.assistance.operit）里填的是 Gemini API key，Gemini API 走这个域名，之前没有规则管它，会掉进
+#            RULE-SET,AI → 人工智能 → AI专用；AI专用 选到出口 IP 被 Google 判成不支持地区的节点时，API 会报错，
+#            只能去固定 AI专用 的节点，连带 Claude/OpenAI。现在 Gemini API 和 Gemini 主站同归 Gemini专用，要固定节点只固定那一个组。
+#            按域名而不是按进程绑：进程查找偶尔失败（知识库 K10），按进程还会把 Operit 的其它流量（别的模型、联网工具）一起拽进来。
+#            只管这一个域名，Vertex（*-aiplatform.googleapis.com）、AI Studio、NotebookLM、cloudcode-pa 等没动，仍走 人工智能。
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
@@ -406,7 +413,8 @@ rules:
 
   # Rev5：Gemini 自家后端（来自 ai.mrs，不放这里会被 RULE-SET,AI 抢去 人工智能=Claude 那组）。进程没识别出来/别的进程发起时靠它们和主站同出口。
   # 放在全局 UDP443 拒绝之后：这些域名的 QUIC 照旧被拒绝，只有 TCP 进 Gemini专用。
-  # AI Studio / NotebookLM / generativelanguage / cloudcode-pa / Flow / Jules 等其它 Google AI 产品没动，仍走 人工智能
+  # Rev15：generativelanguage.googleapis.com（Gemini API，Operit 等填 API key 的客户端走它）也归 Gemini专用，原因见文件头 Rev15。
+  # AI Studio / NotebookLM / cloudcode-pa / Flow / Jules 等其它 Google AI 产品没动，仍走 人工智能
   - DOMAIN-SUFFIX,geminiweb-pa.clients6.google.com,Gemini专用
   - DOMAIN-SUFFIX,geminiweb-pa.clients.google.com,Gemini专用
   - DOMAIN-SUFFIX,alkalicore-pa.clients6.google.com,Gemini专用
@@ -417,6 +425,7 @@ rules:
   - DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,geller-pa.googleapis.com,Gemini专用   # 2026-10-28 日志实锤：Google App 走固定节点，GMS 却被 ai.mrs 抢去 Claude 那组
   - DOMAIN-SUFFIX,gemini.gstatic.com,Gemini专用
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用   # Rev15：Gemini API（Operit 等）。不放这里会被 RULE-SET,AI 抢去 人工智能=AI专用
 
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
