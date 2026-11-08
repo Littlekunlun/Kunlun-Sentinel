@@ -1,7 +1,7 @@
 # 名称: MihomoSmart-eBPF
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-07 [eBPF-Rev15]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-08 [eBPF-Rev16]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -39,6 +39,14 @@
 #            只能去固定 AI专用 的节点，连带 Claude/OpenAI。现在 Gemini API 和 Gemini 主站同归 Gemini专用，要固定节点只固定那一个组。
 #            按域名而不是按进程绑：进程查找偶尔失败（知识库 K10），按进程还会把 Operit 的其它流量（别的模型、联网工具）一起拽进来。
 #            只管这一个域名，Vertex（*-aiplatform.googleapis.com）、AI Studio、NotebookLM、cloudcode-pa 等没动，仍走 人工智能。
+# Rev16 变更：隐私加固，目标是「代理不可用时断网，而不是悄悄直连」。国内分流、DNS、eBPF 段一行没动：
+#            ① BaseSmart 锚点和 手动选择、冷门自选、美国-ION引擎、Gemini专用 加 empty-fallback: REJECT。
+#               核心默认 empty-fallback 是 COMPATIBLE（=直连），组里一个节点都没匹配上时会静默直连（✅ parser.go / groupbase.go）；
+#            ② 故障转移 去掉 直接连接：所有地区组都探测失败时不再退到直连；
+#            ③ 电报消息 不再用 SelectPY 锚点，单独列出选项，去掉 直接连接（Telegram 在国内直连本来就连不上，只会暴露 Telegram 的 IP）；
+#            ④ 订阅拉取 默认改为 默认代理，直接连接 放到最后：直连拉订阅会让本地网络看到机场订阅域名的明文 SNI；
+#               节点全挂时手动切回 直接连接；拉取失败不影响已缓存的节点（知识库 K19 ⑤）。
+#               注意 profile.store-selected 会保留旧的选择，导入后要在面板里把 订阅拉取 手动切到 默认代理 一次。
 #
 # 状态记录：
 # 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
@@ -56,7 +64,7 @@ BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-c
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
 
-BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, penalize-unstable: true}
+BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, penalize-unstable: true, empty-fallback: REJECT}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
 FilterSG: &FilterSG '^(?=.*(?i)(坡|🇸🇬|SG|Sing|SIN|XSP))(?!.*(排除1|排除2|5x)).*$'
@@ -170,7 +178,7 @@ external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download
 external-ui-name: zashboard
 external-ui: ui
 external-controller: 127.0.0.1:9090
-secret: ""
+secret: "MyLibProxy888"
 
 profile:
   store-selected: true
@@ -287,11 +295,11 @@ proxy-groups:
 
   # 机场订阅域名(*.duboji.vip)：默认直连；直连被封或需要翻墙才能拉时，手动切到 默认代理 / 一键智能。
   # 注意：Sub-Store 拉订阅的请求也是先被 eBPF 接进核心、再按规则匹配的，没有这条规则就会落到 兜底流量，经机场节点去拉机场（循环依赖）。
-  - {name: 订阅拉取, type: select, proxies: [直接连接, 默认代理, 一键智能], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
+  - {name: 订阅拉取, type: select, proxies: [默认代理, 一键智能, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
 
-  - {name: 美国-ION引擎, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
+  - {name: 美国-ION引擎, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
 
-  - {name: 手动选择, type: select, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
+  - {name: 手动选择, type: select, include-all: true, empty-fallback: REJECT, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
 
   # AI专用：Claude / Anthropic / OpenAI（经 人工智能）。Gemini 已拆出去，不再共用这一组。
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
@@ -300,12 +308,12 @@ proxy-groups:
   # 平时不点节点 = 这一组自己择优（显示 Smart - Select）；想固定就在 Zashboard 里点具体节点，固定状态只属于这一组，不牵连 AI专用 / 谷歌服务。
   # 注意：对这一组点「整组测速」会解除固定（核心 getGroupDelay 的行为，url-test/smart/fallback 都一样）；测单个节点的延迟不影响。
   # 固定的节点从订阅里消失（改名/下线）时，会自动回到择优，不会卡死在一个不存在的节点上。
-  - {name: Gemini专用, type: smart, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
+  - {name: Gemini专用, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
 
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
-  - {name: 故障转移,     <<: *BaseFB, proxies: [香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 手动选择, 冷门自选, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
+  - {name: 故障转移,     <<: *BaseFB, proxies: [香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 手动选择, 冷门自选], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/ULB.png}
   - {name: 国外流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Global.png}
   - {name: 国内流量,     <<: *SelectDC, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/China.png}
   - {name: 兜底流量,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Final.png}
@@ -322,7 +330,7 @@ proxy-groups:
   - {name: 国际媒体,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/DomesticMedia.png}
   - {name: 新闻媒体,     <<: *SelectUS, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple_News.png}
 
-  - {name: 电报消息,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
+  - {name: 电报消息,     type: select, proxies: [默认代理, '团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
   - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
 
@@ -336,7 +344,7 @@ proxy-groups:
   - {name: 谷歌服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
   - {name: 苹果服务,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
 
-  - {name: 冷门自选,     type: select, include-all: true, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
+  - {name: 冷门自选,     type: select, include-all: true, empty-fallback: REJECT, filter: *FilterOT, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
 
   - {name: 一键智能,  <<: *BaseSmart, include-all: true, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
   - {name: 香港智能,  <<: *BaseSmart, filter: *FilterHK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
@@ -366,7 +374,7 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
-  # 机场订阅域名：订阅拉取 默认直连。放在广告/规则集之前，保证任何规则集都截不走它
+  # 机场订阅域名：订阅拉取 默认走代理（Rev16 起，直连会暴露订阅域名），节点全挂时手动切 直接连接。放在广告/规则集之前，保证任何规则集都截不走它
   - DOMAIN-SUFFIX,duboji.vip,订阅拉取
 
   - AND,((DST-PORT,3478),(NETWORK,UDP),(PROCESS-NAME,com.openai.chatgpt)),人工智能
