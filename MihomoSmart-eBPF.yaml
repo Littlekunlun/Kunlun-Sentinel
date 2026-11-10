@@ -1,7 +1,7 @@
 # 名称: MihomoSmart-eBPF
 # 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
 # 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-10 [eBPF-Rev18]   （Rev7 是没采用的备选，编号跳过）
+# 更新: 2026-11-10 [eBPF-Rev20]   （Rev7 是没采用的备选，编号跳过）
 # Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
 #            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
 # Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
@@ -71,6 +71,21 @@
 #   - dns.nameserver-policy 从上往下匹配、先命中先生效：广告的 rcode 三行必须排在 China/Direct 之前
 #   - dns.fake-ip-filter 同样先命中先生效：广告规则集必须是 real-ip，并排在 China/Direct 之前
 #   - 改 eBPF 段里除 udp-timeout / bypass-rule-set 之外的任何键，都会重建入站，所有连接会断一下
+# Rev19 变更：整份审计后的四处收口（依据见知识库 K15、K30），国内分流和 eBPF 段没动：
+#            ① nameserver-policy 删掉 dns.alidns.com / doh.pub / dns.google / cloudflare-dns.com 四条「域名: 裸 IP」。裸 IP = 明文 UDP 53，
+#               DoH 主机名的自举用的是 default-nameserver，根本不看这四条；它们只在别的查询碰巧问到这几个名字时生效，一生效就是明文
+#               （10-28 日志里出现过 UDP 1.1.1.1:53）。删掉后这几个名字分别落到 rule-set:China（国内 DoH）和 nameserver（境外 DoH）。
+#            ② RULE-SET,XPTV,直接连接 从 Direct 后面挪到 RULE-SET,Proxy 之后、RULE-SET,China 之前。XPTV.mrs 里夹着 akamaized.net、loli.net、
+#               image.tmdb.org、icloud.com、ibytedtos.com 和三家证书机构的域名，原来排得太靠前，这些境外域名会被直连。
+#               挪动后只有这二十来条境外域名改走代理（模拟核对），其余去向不变；B 站大陆版的 upos-hz-mirrorakam.akamaized.net 单独加一条保持直连。
+#            ③ 加 lan-allowed-ips：7890/7891/7893 这几个默认端口只接受本机、私网和热点网段的来源，公网 IPv6 地址连不进来（原来 allow-lan 全开、没有认证）。
+#            ④（Rev20 已撤回）GoogleFCM 组加过代理选项。
+# Rev20 变更：两处，分流规则和 DNS 没动：
+#            ① GoogleFCM 组恢复成只有 直接连接：FCM 搭配了本地 hosts 模块，必须直连，不留能误切的选项。
+#            ② local.include-android-user 从 [0, 10] 改成 [0, 10, 11, 999]：999 是小米/一加「应用双开」的用户，11 给第二个分身/工作用户预留。
+#               不在这个列表里的 Android 用户不被 eBPF 接管，它们的 App 开着 Box 也是直连出去；列了但不存在的用户没有任何影响。
+#               用「加用户」而不是「删掉这个键」：这样改动最小，原来两个用户的接管方式一点不变，只是多接管两个用户段。
+#               改这个键会重建入站，导入时连接断一次。以后开了双开，用 pm list users 看一眼新用户的编号在不在列表里。
 
 # ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -146,7 +161,7 @@ listeners:
       # 改成 false 则这些连接不经代理，直接从物理网卡发出，会被墙卡住，Telegram 要等超时才回退 IPv4。
       ipv6: true
       bypass-private-address: true   # 私网地址(10/8、192.168/16 等)在内核放行，不进核心也不进 Zashboard 连接记录；排查下联互访问题时先想到它
-      include-android-user: [0, 10]  # 主用户 + 分身/工作用户
+      include-android-user: [0, 10, 11, 999]  # 主用户 + 分身/工作用户(10、11) + 应用双开(999)；不在列表里的用户不被接管
       # 可选加固，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围排除，基带/VoLTE 流量在内核层就不进入重定向。
       # 是 rules 层 UID,1001,DIRECT 之外更底层的一道保险，两者不冲突，纯粹是要不要叠加（知识库 K8）。
       # exclude-uid: [1001]
@@ -172,6 +187,7 @@ mixed-port: 7893
 tproxy-port: 9898
 ipv6: false                      # 核心层关闭 IPv6（节点不支持）；这不等于 eBPF 不接管 IPv6，见 ebpf-in.local.ipv6
 allow-lan: true
+lan-allowed-ips: [127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, '::1/128', 'fc00::/7', 'fe80::/10']   # Rev19：默认端口只收本机/私网/热点来源
 unified-delay: true
 tcp-concurrent: true
 log-level: info
@@ -254,10 +270,6 @@ dns:
     "rule-set:MyReject": rcode://name_error
     "rule-set:AntiAD": rcode://name_error
     "+.miwifi.com": 192.168.31.1
-    "dns.alidns.com": [223.5.5.5, 223.6.6.6]
-    "doh.pub": [1.12.12.12, 120.53.53.53]
-    "dns.google": [8.8.8.8, 8.8.4.4]
-    "cloudflare-dns.com": [1.1.1.1, 1.0.0.1]
     # Rev18：下面这几个原来会落进 China/Direct，被国内 DNS 解析；境外服务一律交给境外 DoH（走代理）
     "www.gstatic.com": [https://dns.google/dns-query, https://cloudflare-dns.com/dns-query]
     "+.gradio.live": [https://dns.google/dns-query, https://cloudflare-dns.com/dns-query]
@@ -463,7 +475,6 @@ rules:
   - DOMAIN-SUFFIX,gradio.live,国外流量       # Rev18：同上，Direct 里的境外 AI 演示/开发隧道域名
   - DOMAIN-SUFFIX,ngrok-free.app,国外流量
   - RULE-SET,Direct,直接连接
-  - RULE-SET,XPTV,直接连接
   - DOMAIN-SUFFIX,3gppnetwork.org,UKwifi
   - RULE-SET,ukwifi,UKwifi
   - RULE-SET,Download,直接连接
@@ -494,7 +505,9 @@ rules:
   - RULE-SET,github,Github
   - RULE-SET,Microsoft,微软服务
   - RULE-SET,Facebook,社交平台
+  - DOMAIN-SUFFIX,upos-hz-mirrorakam.akamaized.net,国内流量   # Rev19：B 站大陆版的 Akamai 镜像，保持直连（否则会被下面 Proxy 里的 akamaized.net 带去走代理）
   - RULE-SET,Proxy,国外流量
+  - RULE-SET,XPTV,直接连接                 # Rev19：挪到 Proxy 之后，免得里面的 akamaized.net 等境外域名被直连
   - RULE-SET,China,国内流量
 
   - RULE-SET,PrivateIP,直接连接,no-resolve
