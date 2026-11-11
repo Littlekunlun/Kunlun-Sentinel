@@ -21,6 +21,7 @@
 #      没被引用的 SelectHK 锚点删掉。
 #   ⑦ hosts 里 miwifi.com 192.168.31.2 → 192.168.31.1（路由器实际是 .1）；dns.default-nameserver 只留按 IP 的 DoH（手机 Rev10/17）；
 #      ukwifi 规则集原链接 404（作者挪了目录），换成 Wi-Fi_Calling_rule-set/wificalling-uk.list。
+#   ⑧ 2026-11-11：删掉 redir-port / tproxy-port。这两个入站 Windows 不支持，每次启动都报 not supported on current platform，从来没生效过。
 #
 # 换回 vernesong 原版核心前要删掉：prefer-udp、penalize-unstable（liuran001 专有）。empty-fallback 是上游原有的字段，不用删。
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
@@ -55,9 +56,7 @@ global-ua: "clash.meta"
 mode: rule
 port: 7890
 socks-port: 7891
-redir-port: 9797
 mixed-port: 7893
-tproxy-port: 9898
 ipv6: false
 allow-lan: true
 unified-delay: true
