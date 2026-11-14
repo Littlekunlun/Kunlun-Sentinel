@@ -1,93 +1,3 @@
-# 名称: MihomoSmart-eBPF
-# 核心: liuran001/mihomo (fork 自 vernesong/mihomo, Alpha 分支)，编译必须带 with_ebpf 标签
-# 入站: eBPF hybrid (local 本机 + shared 热点下联)，写法遵循核心文档 docs/ebpf-inbound.md 的标准格式
-# 更新: 2026-11-10 [eBPF-Rev20]   （Rev7 是没采用的备选，编号跳过）
-# Rev3 变更：新增「订阅拉取」组（机场订阅域名默认直连，可手动切走）；新增「Gemini专用」组（与 AI专用 互相隔离）；
-#            「谷歌服务」恢复为普通 SelectPY 组；删除两条被前面 PROCESS-NAME 规则遮住、永远命中不到的 UDP443 规则
-# Rev4 变更：「Gemini专用」改成 smart 组，节点直接挂在组里（和 美国-ION引擎 同一条 filter，节点完全一致），不再引用任何其它组
-# Rev5 变更：Gemini 自家后端 10 个域名补进「Gemini专用」，放在全局 UDP443 拒绝之后、AI 规则集之前
-#            （进程没识别出来/别的进程发起时，它们原来会被 ai.mrs 抢进 人工智能=Claude 那组，出口和主站不一致）。只新增规则，不动已有规则
-# Rev6 变更：整份审计后的清理，不改分流行为——删掉没被引用的 SelectHK 锚点；更新过时的状态注释；GSA 进程规则的注释改成实测依据。
-#            Rev5 草稿里「Gemini 的 UDP443 改拒绝」那 5 行实验已否决、不进配置：同一批节点上 Claude 的 QUIC 22/22 成功，没有证据说明 QUIC 是 Gemini 出错的原因
-# Rev8 变更：只改 FilterUK 一行，分流规则一条没动。原来的写法不认 🇬🇧 旗帜、London、Britain，
-#            且 UK 两个字母会匹配 Ukraine 之类；现在补上旗帜/城市/英文国名，UK 要求前后不是字母，「精英」不再算英国。
-# Rev9 变更：只加一条 PROCESS-NAME,org.telegram.messenger,电报消息，放在另外两个 Telegram 进程规则旁边。
-#            原因：官网 APK（.web）和 Extera 已有进程规则，Play 版官方客户端没有，它连 194.221.250.50 这类不在 TelegramIP 里的地址时会掉进 MATCH。
-# Rev10 变更：只改 dns.default-nameserver，分流规则一条没动。原来是 4 个明文 UDP 53 的公共解析器，家里 Wi-Fi 上它们全被丢包
-#            （路由器自己的 DNS 能答，223.5.5.5/1.12.12.12/8.8.8.8 的 UDP 53 都没回包，TCP 443 是通的），DoH 域名没法自举，直连全断；
-#            现在前面加了两个「按 IP 的 DoH」（走 TCP 443，不依赖 UDP 53），明文的留作备份，并发请求谁先成功用谁。
-# Rev11 变更：只改 hosts 里 miwifi.com 的地址，192.168.31.2 → 192.168.31.1（路由器实际是 .1，.2 上没有路由器页面，miwifi.com 因此打不开）。
-# Rev12 变更：只清理从没生效过的键和过时注释，分流规则、DNS 解析行为、eBPF 段的取值一条没动：
-#            ① dns.cache-capacity 不是核心认的键（核心只认 cache-max-size，写了被静默忽略），改成 cache-max-size: 4096（等于默认值，行为不变）；
-#            ② 团子 provider 的 override.client-fingerprint 不是核心 override 支持的键，一直被静默忽略，删掉
-#               （要真给节点加指纹，得写 override-expr: ['.client-fingerprint = "chrome"']，那会改变节点行为，需要时单独评估）；
-#            ③ sniffer.skip-domain 里的 "Mijia Cloud" 是带空格的串，永远匹配不到真实域名，删掉；
-#            ④ tc-priority 的注释更正：任何优先级只要内核/权限允许都走 TCX，不再只有 1；
-#            ⑤ 文件名注释改成 MihomoSmart-eBPF；Rev9 的原因说明挪回 Rev9；末尾补换行。
-# Rev13 变更：只改 nameserver-policy 里 "+.miwifi.com" 一行，"dhcp://system" → "192.168.31.1"：
-#            dhcp://system 在核心里等于 system 客户端，只会读 /etc/resolv.conf，安卓上没有这个文件（2026-11-02 实测报
-#            failed to read /etc/resolv.conf），这条一直是失败的。改成直接问路由器（明文 UDP 53，路由器一定回包），不再依赖那个文件；
-#            不在家里网络时这条查询会失败，跟改之前一样，只影响 miwifi.com 的子域名，miwifi.com 本身走 hosts。
-# Rev14 变更：机场新增「超级节点」，和 ION 同一档、都是美国节点。只改 FilterION、FilterUSION 两条过滤器，其余一行没动：
-#            名字里带「超级节点」的也算进来，所以 团子招牌ION主用组、美国-ION引擎、Gemini专用 现在都包含 ION 和 超级节点两类；
-#            AI专用 引用的是 美国-ION引擎，也跟着一起带上。超级节点按「都是美国节点」处理，不再要求名字里有 美/US；
-#            延迟/倍 的排除规则保持各自原样（美国那条排除 延迟、倍；团子招牌那条只排除 延迟）。
-# Rev15 变更：只加一条 DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用，放在 Rev5 那组 Gemini 后端域名里（全局 UDP443 拒绝之后、
-#            RULE-SET,AI 之前），其余一行没动，并把旁边注释里“generativelanguage 仍走 人工智能”那半句删掉。
-#            原因：Operit（com.ai.assistance.operit）里填的是 Gemini API key，Gemini API 走这个域名，之前没有规则管它，会掉进
-#            RULE-SET,AI → 人工智能 → AI专用；AI专用 选到出口 IP 被 Google 判成不支持地区的节点时，API 会报错，
-#            只能去固定 AI专用 的节点，连带 Claude/OpenAI。现在 Gemini API 和 Gemini 主站同归 Gemini专用，要固定节点只固定那一个组。
-#            按域名而不是按进程绑：进程查找偶尔失败（知识库 K10），按进程还会把 Operit 的其它流量（别的模型、联网工具）一起拽进来。
-#            只管这一个域名，Vertex（*-aiplatform.googleapis.com）、AI Studio、NotebookLM、cloudcode-pa 等没动，仍走 人工智能。
-# Rev16 变更：隐私加固，目标是「代理不可用时断网，而不是悄悄直连」。国内分流、DNS、eBPF 段一行没动：
-#            ① BaseSmart 锚点和 手动选择、冷门自选、美国-ION引擎、Gemini专用 加 empty-fallback: REJECT。
-#               核心默认 empty-fallback 是 COMPATIBLE（=直连），组里一个节点都没匹配上时会静默直连（✅ parser.go / groupbase.go）；
-#            ② 故障转移 去掉 直接连接：所有地区组都探测失败时不再退到直连；
-#            ③ 电报消息 不再用 SelectPY 锚点，单独列出选项，去掉 直接连接（Telegram 在国内直连本来就连不上，只会暴露 Telegram 的 IP）；
-#            ④ 订阅拉取 默认改为 默认代理，直接连接 放到最后：直连拉订阅会让本地网络看到机场订阅域名的明文 SNI；
-#               节点全挂时手动切回 直接连接；拉取失败不影响已缓存的节点（知识库 K19 ⑤）。
-#               注意 profile.store-selected 会保留旧的选择，导入后要在面板里把 订阅拉取 手动切到 默认代理 一次。
-# Rev17 变更：堵住 Box 运行时仍会以明文/直连发出去、能被本地网络（校园网）看到的两处，分流规则一条没动：
-#            ① default-nameserver 去掉 4 个明文 UDP 53 项（223.5.5.5、1.12.12.12、8.8.8.8、1.0.0.1），只留两个按 IP 访问的 DoH。
-#               这几项是并发查询（dns/util.go batchExchange），明文项每次都会和 DoH 一起发出，把 dns.google、cloudflare-dns.com
-#               这些 DoH 主机名明文暴露给本地网络；校园网上它们本来就被丢掉（知识库 K15），实际起作用的一直只有那两个 DoH。
-#            ② github 规则集（rule.kelee.one）原来 proxy: DIRECT，每小时直连一次，SNI 明文可见；改成 proxy: 订阅拉取（默认走代理，
-#               节点全挂时在面板把 订阅拉取 切回 直接连接 即可）。拉取失败只影响这个规则集更新，已缓存的内容照用。
-#            ③ 订阅拉取 组上方那行注释漏改（还写着默认直连），改正。
-# Rev18 变更：把"境外服务却被直连或交给国内 DNS"的几处收回来，避免境外网站/AI 看到真实 IP 或国内解析器：
-#            ① www.gstatic.com（谷歌静态资源、reCAPTCHA、谷歌登录页都用）原来被 Direct 规则集截去直连 + 国内 DNS，改走 谷歌服务；
-#            ② gradio.live、ngrok-free.app（AI 演示、开发隧道）原来也在 Direct 里直连，改走 国外流量；
-#            ③ 以上几个加上 recaptcha.net、whoami.akamai.net（后者会直接返回"是谁在帮你解析"，国内解析器会暴露国内环境）
-#               在 fake-ip-filter 里改成 fake-ip（交给节点远端解析），nameserver-policy 里指到 Google/Cloudflare 的 DoH（走代理）。
-#            connectivitycheck.gstatic.com、cp.cloudflare.com 等系统联网检测仍然直连，不带账号信息，改走代理反而会让系统误判断网。
-#
-# 状态记录：
-# 已验证（2026-09）：shared.interface=wlan2（dumpsys 确认）、内核 6.12 系列不在 6.6.0~6.6.46 的 LPM trie 问题区间。
-# 待确认：
-#   1) Box 是否依赖 redir-port / tproxy-port（保留实测无副作用，是否必需未知）
-#   2) 热点关了再开时，shared 模式 TC 挂载跟系统热点卸载加速会不会冲突（知识库 K21）
-#
-# 维护提醒（详见知识库 K11、K15、K21）：
-#   - dns.nameserver-policy 从上往下匹配、先命中先生效：广告的 rcode 三行必须排在 China/Direct 之前
-#   - dns.fake-ip-filter 同样先命中先生效：广告规则集必须是 real-ip，并排在 China/Direct 之前
-#   - 改 eBPF 段里除 udp-timeout / bypass-rule-set 之外的任何键，都会重建入站，所有连接会断一下
-# Rev19 变更：整份审计后的四处收口（依据见知识库 K15、K30），国内分流和 eBPF 段没动：
-#            ① nameserver-policy 删掉 dns.alidns.com / doh.pub / dns.google / cloudflare-dns.com 四条「域名: 裸 IP」。裸 IP = 明文 UDP 53，
-#               DoH 主机名的自举用的是 default-nameserver，根本不看这四条；它们只在别的查询碰巧问到这几个名字时生效，一生效就是明文
-#               （10-28 日志里出现过 UDP 1.1.1.1:53）。删掉后这几个名字分别落到 rule-set:China（国内 DoH）和 nameserver（境外 DoH）。
-#            ② RULE-SET,XPTV,直接连接 从 Direct 后面挪到 RULE-SET,Proxy 之后、RULE-SET,China 之前。XPTV.mrs 里夹着 akamaized.net、loli.net、
-#               image.tmdb.org、icloud.com、ibytedtos.com 和三家证书机构的域名，原来排得太靠前，这些境外域名会被直连。
-#               挪动后只有这二十来条境外域名改走代理（模拟核对），其余去向不变；B 站大陆版的 upos-hz-mirrorakam.akamaized.net 单独加一条保持直连。
-#            ③ 加 lan-allowed-ips：7890/7891/7893 这几个默认端口只接受本机、私网和热点网段的来源，公网 IPv6 地址连不进来（原来 allow-lan 全开、没有认证）。
-#            ④（Rev20 已撤回）GoogleFCM 组加过代理选项。
-# Rev20 变更：两处，分流规则和 DNS 没动：
-#            ① GoogleFCM 组恢复成只有 直接连接：FCM 搭配了本地 hosts 模块，必须直连，不留能误切的选项。
-#            ② local.include-android-user 从 [0, 10] 改成 [0, 10, 11, 999]：999 是小米/一加「应用双开」的用户，11 给第二个分身/工作用户预留。
-#               不在这个列表里的 Android 用户不被 eBPF 接管，它们的 App 开着 Box 也是直连出去；列了但不存在的用户没有任何影响。
-#               用「加用户」而不是「删掉这个键」：这样改动最小，原来两个用户的接管方式一点不变，只是多接管两个用户段。
-#               改这个键会重建入站，导入时连接断一次。以后开了双开，用 pm list users 看一眼新用户的编号在不在列表里。
-
-# ==================== 锚点配置 ====================
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
@@ -106,22 +16,17 @@ FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|
 FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
 
 FilterION: &FilterION '^(?i)(?=.*(?:ION|超级节点))(?!.*延迟).*$'
-# 美国 ION + 超级节点：「美国-ION引擎」和「Gemini专用」共用同一条，改一处两边同步。
-# ION 节点要求名字里有 美/US；超级节点都是美国节点，不再要求
 FilterUSION: &FilterUSION '^(?i)(?:(?=.*(?:美|US))(?=.*ION)|(?=.*超级节点))(?!.*(?:延迟|倍)).*$'
 
-# 区域策略组底层继承配置 (已统一使用 手动选择)
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectPY: &SelectPY {type: select, proxies: [默认代理, '团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectDC: &SelectDC {type: select, proxies: [直接连接, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择]}
 SelectSG: &SelectSG {type: select, proxies: [狮城智能, 默认代理, 故障转移, 香港智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 SelectUS: &SelectUS {type: select, proxies: [美国智能, 默认代理, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
 
-# ==================== 代理提供者 ====================
 proxy-providers:
   团子机场: {<<: *BaseProvider, url: 'http://127.0.0.1:3001/KunlunEmpyrean/download/%E5%9B%A2%E5%AD%90', override: {additional-prefix: '[团子] '}}
 
-# ==================== 监听器 ====================
 listeners:
   - {name: SS-IN,  type: shadowsocks, listen: 127.0.0.1, port: 10000, udp: true, password: local_proxy_123, cipher: aes-256-gcm}
   - {name: MIXED-SG, type: mixed, listen: 127.0.0.1, port: 50000, udp: true, proxy: 狮城智能}
@@ -133,51 +38,33 @@ listeners:
   - {name: MIXED-EU, type: mixed, listen: 127.0.0.1, port: 50006, udp: true, proxy: 欧洲智能}
   - {name: MIXED-AL, type: mixed, listen: 127.0.0.1, port: 50007, udp: true, proxy: 一键智能}
 
-  # ---------------- eBPF 透明入站 ----------------
-  # 写法遵循核心文档 docs/ebpf-inbound.md 的标准格式；没写出来的键都用核心默认值。
-  # 用不上的项不写：bypass-tun-direct（没有 TUN）、fakeip-icmp（只让 ping fake-ip 有回应，不代表能连通）。
   - name: ebpf-in
     type: ebpf
-    mode: hybrid                 # local(本机 App) + shared(热点下联设备) 都接管
+    mode: hybrid
     network: [tcp, udp]
-    udp-timeout: 300             # 秒，默认 300、下限 5；改它可热更新，不重建入站
-    tc-priority: 1               # 越小越先跑；内核（6.6 起）和权限允许有序挂载时，任何优先级都用 TCX，否则回退 clsact；同优先级按挂载顺序
+    udp-timeout: 300
+    tc-priority: 1
 
-    # 命中下列 ipcidr 规则集的目标地址，直接在内核放行，不进核心；本机和热点两个角色共用。
-    # 两个数据源范围有重叠，属于交叉覆盖，不冲突；规则集内容按各自 interval 更新，会自动进内核，不需要重载。
-    # 新增旁路数据源前，先拿 Google、Cloudflare 这类境外网段做一次重叠检查：
-    # 2026-08 试过 X-Shelby/geoip，它把 Google 的 74.125.16.64/26 标成了中国 IP，Google 直接打不开。
-    # fake-ip 段(198.18.0.1/16)永远进核心，不受旁路影响；广告走 real-ip + rcode，拿不到 IP 就不会被旁路。
-    # 已知缺口：写死 IP 且落在国内网段的广告，会被内核直接放行（知识库 K11、K21）。
     bypass-rule-set:
       - ChinaIP
       - MetaCN
 
     local:
-      data-plane: cgroup         # cgroup(默认) | tc。Android 15+ 下 cgroup 会接管 netd 的钩子，正常停止核心时归还；别强杀核心（知识库 K21）
-      dns-mode: hijack           # 53 端口无条件劫持进核心，先于任何旁路策略
-      # ipv6 的含义是"要不要接管 IPv6 流量"，不是"要不要支持 IPv6"。核心层的 IPv6 已经关了（顶层 ipv6:false、dns.ipv6:false，不下发 AAAA）。
-      # 这里保持 true：日志里 Telegram 写死的 IPv6 数据中心地址（45 小时 887 条）会被核心接住、按规则处理，失败率 7.8%，和 IPv4 的 5.5% 相近。
-      # 改成 false 则这些连接不经代理，直接从物理网卡发出，会被墙卡住，Telegram 要等超时才回退 IPv4。
+      data-plane: cgroup
+      dns-mode: hijack
       ipv6: true
-      bypass-private-address: true   # 私网地址(10/8、192.168/16 等)在内核放行，不进核心也不进 Zashboard 连接记录；排查下联互访问题时先想到它
-      include-android-user: [0, 10, 11, 999]  # 主用户 + 分身/工作用户(10、11) + 应用双开(999)；不在列表里的用户不被接管
-      # 可选加固，默认未启用：把 AID_RADIO(UID 1001) 从 eBPF 接管范围排除，基带/VoLTE 流量在内核层就不进入重定向。
-      # 是 rules 层 UID,1001,DIRECT 之外更底层的一道保险，两者不冲突，纯粹是要不要叠加（知识库 K8）。
-      # exclude-uid: [1001]
-      state-capacity: 32768      # 旧键，新格式里没有对应项，源码里仍然生效；去掉会让 UDP peer/flow 表缩到默认的 16384。日志出现 "map ... is 85.0% full" 再考虑调大
+      bypass-private-address: true
+      include-android-user: [0, 10, 11, 999]
+      state-capacity: 32768
 
     shared:
-      # 已通过 dumpsys wifi 确认：mApInterfaceName: wlan2, mRole: ROLE_SOFTAP_TETHERED，只在热点开着时存在。
-      # 换机型/换 ROM 后这个名字大概率会变，出问题先重新跑一遍 dumpsys wifi 核对。
-      data-plane: packet_rewrite # packet_rewrite(默认) | socket_assign
+      data-plane: packet_rewrite
       dns-mode: hijack
       interface: [wlan2]
-      ipv6: true                 # 含义同 local.ipv6；热点客机（如电脑）的 Telegram 同样会走写死的 IPv6 地址
+      ipv6: true
       bypass-private-address: true
-      state-capacity: 32768      # 同 local.state-capacity；去掉会让热点 bypass 表缩到默认的 16384
+      state-capacity: 32768
 
-# ==================== 核心配置 ====================
 global-ua: "clash.meta"
 mode: rule
 port: 7890
@@ -185,9 +72,9 @@ socks-port: 7891
 redir-port: 9797
 mixed-port: 7893
 tproxy-port: 9898
-ipv6: false                      # 核心层关闭 IPv6（节点不支持）；这不等于 eBPF 不接管 IPv6，见 ebpf-in.local.ipv6
+ipv6: false
 allow-lan: true
-lan-allowed-ips: [127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, '::1/128', 'fc00::/7', 'fe80::/10']   # Rev19：默认端口只收本机/私网/热点来源
+lan-allowed-ips: [127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, '::1/128', 'fc00::/7', 'fe80::/10']
 unified-delay: true
 tcp-concurrent: true
 log-level: info
@@ -235,8 +122,6 @@ sniffer:
     - "+.xunyou.mobi"
     - "+.3gppnetwork.org"
 
-# ==================== TUN（不使用） ====================
-# eBPF 入站已经接管本机和热点流量，TUN 用不上；显式写 false，防止被外部工具或默认值打开。
 tun:
   enable: false
 
@@ -244,7 +129,6 @@ hosts:
   miwifi.com: 192.168.31.1
   services.googleapis.cn: services.googleapis.com
 
-# ==================== DNS 配置 ====================
 dns:
   enable: true
   ipv6: false
@@ -255,22 +139,15 @@ dns:
   prefer-h3: false
   listen: 0.0.0.0:1053
 
-  # DoH 主机名（dns.alidns.com、doh.pub、dns.google……）靠这里自举。只写明文 UDP 53 的话，遇到丢 UDP 53 的网络就整条链断掉；
-  # 所以只用按 IP 访问的 DoH（TCP 443，主机部分必须是 IP，核心会检查）。Rev17 起不再留明文备份：几项是并发发出的，
-  # 明文项每次都会把 dns.google 等主机名明文发给本地网络，在校园网上又本来就被丢掉。两家都连不上时只影响直连域名的解析，走代理的不受影响。
   default-nameserver:
     - https://223.5.5.5/dns-query
     - https://1.12.12.12/dns-query
 
-  # 从上往下匹配，先命中先生效。广告的 rcode 必须排在最上面：
-  # 国内广告域名几乎都同时在 China 列表里，排在 China 下面会先被 China 截走、拿到国内真实 IP，
-  # 再被 eBPF 的国内旁路在内核放行，规则层的拦截永远碰不到（知识库 K11、K15）。
   nameserver-policy:
     "rule-set:Advertising": rcode://name_error
     "rule-set:MyReject": rcode://name_error
     "rule-set:AntiAD": rcode://name_error
     "+.miwifi.com": 192.168.31.1
-    # Rev18：下面这几个原来会落进 China/Direct，被国内 DNS 解析；境外服务一律交给境外 DoH（走代理）
     "www.gstatic.com": [https://dns.google/dns-query, https://cloudflare-dns.com/dns-query]
     "+.gradio.live": [https://dns.google/dns-query, https://cloudflare-dns.com/dns-query]
     "+.ngrok-free.app": [https://dns.google/dns-query, https://cloudflare-dns.com/dns-query]
@@ -297,14 +174,13 @@ dns:
     - https://doh.pub/dns-query
     - https://doh.360.cn/dns-query
 
-  # rule 模式同样先命中先生效。广告三行必须是 real-ip（写成 fake-ip 的话上面的 rcode 就轮不到了），并排在 China/Direct 前面。
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
     - RULE-SET,Advertising,real-ip
     - RULE-SET,MyReject,real-ip
     - RULE-SET,AntiAD,real-ip
-    - DOMAIN,www.gstatic.com,fake-ip            # Rev18：这 5 条要排在 Direct/China 前面，否则会被它们判成 real-ip
+    - DOMAIN,www.gstatic.com,fake-ip
     - DOMAIN-SUFFIX,gradio.live,fake-ip
     - DOMAIN-SUFFIX,ngrok-free.app,fake-ip
     - DOMAIN-SUFFIX,recaptcha.net,fake-ip
@@ -322,25 +198,17 @@ dns:
     - DOMAIN-SUFFIX,push.apple.com,real-ip
     - MATCH,fake-ip
 
-# ==================== 代理策略组 ====================
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  # 机场订阅域名(*.duboji.vip) 和 github 规则集（rule.kelee.one）的下载：默认走代理（Rev16/17 起，直连会把这些域名明文暴露给本地网络）；节点全挂时手动切到 直接连接。
-  # 注意：Sub-Store 拉订阅的请求也是先被 eBPF 接进核心、再按规则匹配的，没有这条规则就会落到 兜底流量，经机场节点去拉机场（循环依赖）。
   - {name: 订阅拉取, type: select, proxies: [默认代理, 一键智能, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
 
   - {name: 美国-ION引擎, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
 
   - {name: 手动选择, type: select, include-all: true, empty-fallback: REJECT, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
 
-  # AI专用：Claude / Anthropic / OpenAI（经 人工智能）。Gemini 已拆出去，不再共用这一组。
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
 
-  # Gemini专用：smart 组，节点直接挂在组里，和 美国-ION引擎 用同一条 FilterUSION（节点完全一致），不引用任何其它组。
-  # 平时不点节点 = 这一组自己择优（显示 Smart - Select）；想固定就在 Zashboard 里点具体节点，固定状态只属于这一组，不牵连 AI专用 / 谷歌服务。
-  # 注意：对这一组点「整组测速」会解除固定（核心 getGroupDelay 的行为，url-test/smart/fallback 都一样）；测单个节点的延迟不影响。
-  # 固定的节点从订阅里消失（改名/下线）时，会自动回到择优，不会卡死在一个不存在的节点上。
   - {name: Gemini专用, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
@@ -389,7 +257,6 @@ proxy-groups:
   - {name: 英国智能,  <<: *BaseSmart, filter: *FilterUK, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_Kingdom.png}
   - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
-# ==================== 规则路由 ====================
 rules:
 
   - DST-PORT,5228,GoogleFCM
@@ -407,7 +274,6 @@ rules:
   - DOMAIN-KEYWORD,volte,DIRECT
   - DOMAIN-KEYWORD,epdg,DIRECT
 
-  # 机场订阅域名：订阅拉取 默认走代理（Rev16 起，直连会暴露订阅域名），节点全挂时手动切 直接连接。放在广告/规则集之前，保证任何规则集都截不走它
   - DOMAIN-SUFFIX,duboji.vip,订阅拉取
 
   - AND,((DST-PORT,3478),(NETWORK,UDP),(PROCESS-NAME,com.openai.chatgpt)),人工智能
@@ -418,22 +284,18 @@ rules:
 
   - RULE-SET,Private,直接连接,no-resolve
 
-  # 广告用 REJECT，不用 REJECT-DROP：DROP 会让连接挂 60 秒才断，App 等广告加载时会卡住（知识库 K4）
   - RULE-SET,Advertising,REJECT
   - RULE-SET,MyReject,REJECT
   - RULE-SET,AntiAD,REJECT
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMedia)),社交平台
   - AND,((DST-PORT,443),(NETWORK,UDP),(RULE-SET,SocialMediaIP)),社交平台
 
-  # ================= Gemini专用 =================
-  # PROCESS-NAME 对本机流量有效，规则集/关键字负责网页端和其它设备
   - PROCESS-NAME,com.google.android.apps.bard,Gemini专用
-  - PROCESS-NAME,com.google.android.googlequicksearchbox,Gemini专用   # 这台机器上 Play 商店装的 Gemini App，实测进程名就是它（2026-10-28 日志），整个 Google App 的流量都跟着走这个组
+  - PROCESS-NAME,com.google.android.googlequicksearchbox,Gemini专用
   - RULE-SET,Gemini,Gemini专用
   - DOMAIN-KEYWORD,gemini.google,Gemini专用
   - DOMAIN-KEYWORD,bard.google,Gemini专用
 
-  # ================= AI专用 =================
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
   - PROCESS-NAME,com.anthropic.claude,AI专用
@@ -452,10 +314,6 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DOMAIN-KEYWORD,stun,REJECT
 
-  # Rev5：Gemini 自家后端（来自 ai.mrs，不放这里会被 RULE-SET,AI 抢去 人工智能=Claude 那组）。进程没识别出来/别的进程发起时靠它们和主站同出口。
-  # 放在全局 UDP443 拒绝之后：这些域名的 QUIC 照旧被拒绝，只有 TCP 进 Gemini专用。
-  # Rev15：generativelanguage.googleapis.com（Gemini API，Operit 等填 API key 的客户端走它）也归 Gemini专用，原因见文件头 Rev15。
-  # AI Studio / NotebookLM / cloudcode-pa / Flow / Jules 等其它 Google AI 产品没动，仍走 人工智能
   - DOMAIN-SUFFIX,geminiweb-pa.clients6.google.com,Gemini专用
   - DOMAIN-SUFFIX,geminiweb-pa.clients.google.com,Gemini专用
   - DOMAIN-SUFFIX,alkalicore-pa.clients6.google.com,Gemini专用
@@ -464,15 +322,15 @@ rules:
   - DOMAIN-SUFFIX,appsgenaiserver-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,Gemini专用
-  - DOMAIN-SUFFIX,geller-pa.googleapis.com,Gemini专用   # 2026-10-28 日志实锤：Google App 走固定节点，GMS 却被 ai.mrs 抢去 Claude 那组
+  - DOMAIN-SUFFIX,geller-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,gemini.gstatic.com,Gemini专用
-  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用   # Rev15：Gemini API（Operit 等）。不放这里会被 RULE-SET,AI 抢去 人工智能=AI专用
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用
 
   - DOMAIN-KEYWORD,mtalk,GoogleFCM
 
   - RULE-SET,LocationDKS,抖快书定位
-  - DOMAIN,www.gstatic.com,谷歌服务          # Rev18：Direct 规则集里有它，不前置会被直连（谷歌登录、reCAPTCHA、Gemini 页面都用）
-  - DOMAIN-SUFFIX,gradio.live,国外流量       # Rev18：同上，Direct 里的境外 AI 演示/开发隧道域名
+  - DOMAIN,www.gstatic.com,谷歌服务
+  - DOMAIN-SUFFIX,gradio.live,国外流量
   - DOMAIN-SUFFIX,ngrok-free.app,国外流量
   - RULE-SET,Direct,直接连接
   - DOMAIN-SUFFIX,3gppnetwork.org,UKwifi
@@ -505,9 +363,9 @@ rules:
   - RULE-SET,github,Github
   - RULE-SET,Microsoft,微软服务
   - RULE-SET,Facebook,社交平台
-  - DOMAIN-SUFFIX,upos-hz-mirrorakam.akamaized.net,国内流量   # Rev19：B 站大陆版的 Akamai 镜像，保持直连（否则会被下面 Proxy 里的 akamaized.net 带去走代理）
+  - DOMAIN-SUFFIX,upos-hz-mirrorakam.akamaized.net,国内流量
   - RULE-SET,Proxy,国外流量
-  - RULE-SET,XPTV,直接连接                 # Rev19：挪到 Proxy 之后，免得里面的 akamaized.net 等境外域名被直连
+  - RULE-SET,XPTV,直接连接
   - RULE-SET,China,国内流量
 
   - RULE-SET,PrivateIP,直接连接,no-resolve
@@ -525,16 +383,15 @@ rules:
 
   - PROCESS-NAME,com.exteraless.app,电报消息
   - PROCESS-NAME,org.telegram.messenger.web,电报消息
-  - PROCESS-NAME,org.telegram.messenger,电报消息   # Play 商店版官方客户端（.web 是官网 APK）；一加平板日志里它有 988 次落到 MATCH
+  - PROCESS-NAME,org.telegram.messenger,电报消息
 
   - MATCH,兜底流量
 
-# ==================== 规则集（ChinaIP、MetaCN 同时被 eBPF 入站用作内核旁路） ====================
 BehaviorDN: &BehaviorDN {type: http, behavior: domain, format: mrs, interval: 86400}
 BehaviorDY: &BehaviorDY {type: http, behavior: domain, format: yaml, interval: 86400}
 BehaviorIP: &BehaviorIP {type: http, behavior: ipcidr, format: mrs, interval: 86400}
 ClassicalText: &ClassicalText {type: http, interval: 86400, behavior: classical, format: text}
-ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, format: yaml, proxy: 订阅拉取}   # Rev17：原 DIRECT，直连会暴露 rule.kelee.one
+ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, format: yaml, proxy: 订阅拉取}
 
 rule-providers:
   AppBlacklist:   {<<: *ClassicalText, url: https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list}
@@ -586,4 +443,3 @@ rule-providers:
   MyReject:        {<<: *ClassicalText, url: https://gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/my-reject.list}
   fakeip-filter:   {<<: *BehaviorDN, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
   AntiAD:          {<<: *BehaviorDY, url: https://gh-proxy.org/https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml}
-# ==================== EOF ====================
