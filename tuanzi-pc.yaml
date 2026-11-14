@@ -1,32 +1,5 @@
-# 名称: tuanzi-pc（Windows 裸核 TUN）
-# 核心: liuran001/mihomo（vernesong 分支的 fork，带 prefer-udp / penalize-unstable），用法见 start-mihomo.bat
-# 更新: 2026-11-10 —— 对照手机 MihomoSmart-eBPF 的 Rev8~Rev18 把电脑端能同步的都同步了，只改下面列的这些，其余一行没动。
-#
-# 本次变更（电脑版）：
-#   ① Gemini 后端补规则：geller-pa / robinfrontend-pa / appsgenaiserver-pa / generativelanguage 这几个 googleapis.com 域名同时在 ai.mrs 里，
-#      而 RULE-SET,AI 排在 谷歌服务 规则前面，原来它们被抢进 人工智能=AI专用（Claude 那组），和 gemini.google.com 不是同一出口
-#      （google.com 子域名和 gstatic.com 已经被前面的规则拉进 谷歌服务，不受影响）。现在放到 RULE-SET,AI 之前，统一进 Gemini专用。
-#   ② 境外服务不再直连/不再走国内 DNS（手机 Rev18）：gradio.live、ngrok-free.app 原来在 Direct 规则集里直连，改走 国外流量；
-#      这两个加上 recaptcha.net、whoami.akamai.net（后者会返回"是谁在帮你解析"）在 fake-ip-filter 里改成 fake-ip，
-#      nameserver-policy 里指到 Google/Cloudflare 的 DoH（原来会落进 China/Direct，被阿里/腾讯 DNS 解析）。
-#   ③ 订阅拉取 组（手机 Rev3/16/17）：duboji.vip 原来写死 DIRECT，Sub-Store 拉机场订阅的明文 SNI 会被本地网络看到；
-#      改成走 订阅拉取（默认 默认代理，直接连接 放最后）。github 规则集（rule.kelee.one）原来 proxy: DIRECT，同样改成 订阅拉取。
-#      节点全挂/首次启动还没有任何节点时，在面板把 订阅拉取 切到 直接连接 即可；拉取失败不影响已缓存的节点。
-#   ④ 不再悄悄直连（手机 Rev16）：BaseSmart 和 美国-ION引擎、Gemini专用、手动选择、冷门自选 加 empty-fallback: REJECT
-#      （核心默认是 COMPATIBLE=直连，组里一个节点都没匹配上会静默直连）；故障转移、电报消息 去掉 直接连接。
-#   ⑤ 过滤器同步手机：FilterUK 认旗帜/伦敦/Britain，UK 前后不能是字母，「精英」不再算英国（Rev8）；
-#      FilterION / FilterUSION 把机场新增的「超级节点」算进来（Rev14）。
-#   ⑥ 清理从没生效过的键：dns.cache-capacity 核心不认（只认 cache-max-size，默认 4096，写 20480 一直被静默忽略），改成 cache-max-size: 4096，行为不变；
-#      override.client-fingerprint 不是 provider override 支持的键，删掉；sniffer.skip-domain 里带空格的 "Mijia Cloud" 永远匹配不到，删掉；
-#      没被引用的 SelectHK 锚点删掉。
-#   ⑦ hosts 里 miwifi.com 192.168.31.2 → 192.168.31.1（路由器实际是 .1）；dns.default-nameserver 只留按 IP 的 DoH（手机 Rev10/17）；
-#      ukwifi 规则集原链接 404（作者挪了目录），换成 Wi-Fi_Calling_rule-set/wificalling-uk.list。
-#   ⑧ 2026-11-11：删掉 redir-port / tproxy-port。这两个入站 Windows 不支持，每次启动都报 not supported on current platform，从来没生效过。
-#
-# 换回 vernesong 原版核心前要删掉：prefer-udp、penalize-unstable（liuran001 专有）。empty-fallback 是上游原有的字段，不用删。
 BaseProvider: &BaseProvider {type: http, interval: 3600, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 BaseFB: &BaseFB {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-# prefer-udp / penalize-unstable 是 liuran001/mihomo 分支专有字段（BaseSmart、美国-ION引擎、Gemini专用 都用到了），换回 vernesong 原版核心前必须全部删掉，否则启动失败
 BaseSmart: &BaseSmart {type: smart, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-asn: false, prefer-udp: true, penalize-unstable: true, empty-fallback: REJECT}
 
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -40,7 +13,6 @@ FilterEU: &FilterEU '^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|
 FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))'
 FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
 FilterION: &FilterION '^(?i)(?=.*(?:ION|超级节点))(?!.*延迟).*$'
-# 美国 ION / 超级节点：「美国-ION引擎」和「Gemini专用」共用这一条，改一处两边同步。超级节点按「都是美国节点」处理，不再要求名字里有 美/US
 FilterUSION: &FilterUSION '^(?i)(?:(?=.*(?:美|US))(?=.*ION)|(?=.*超级节点))(?!.*(?:延迟|倍)).*$'
 
 SelectFB: &SelectFB {type: select, proxies: ['团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择, 直接连接]}
@@ -133,14 +105,12 @@ dns:
   cache-max-size: 4096
   prefer-h3: false
   listen: 127.0.0.1:1053
-  # 只用按 IP 访问的 DoH（TCP 443，不依赖 UDP 53）；明文项是并发发出的，会把 DoH 主机名明文暴露给本地网络，家里 Wi-Fi 上它们本来也被丢包（知识库 K15）
   default-nameserver:
     - https://223.5.5.5/dns-query
     - https://1.12.12.12/dns-query
   nameserver-policy:
     "+.miwifi.com": "dhcp://system"
     "+.gstatic.com": [https://8.8.8.8/dns-query, https://1.1.1.1/dns-query]
-    # 下面几个原来会落进 China/Direct 被国内 DNS 解析；境外服务一律交给境外 DoH（走代理）
     "+.gradio.live": [https://8.8.8.8/dns-query, https://1.1.1.1/dns-query]
     "+.ngrok-free.app": [https://8.8.8.8/dns-query, https://1.1.1.1/dns-query]
     "+.recaptcha.net": [https://8.8.8.8/dns-query, https://1.1.1.1/dns-query]
@@ -165,7 +135,6 @@ dns:
   fake-ip-filter-mode: rule
   fake-ip-filter:
     - DOMAIN-KEYWORD,mtalk.google,real-ip
-    # 这 4 条要排在 AppBlacklist/Direct/China 前面，否则会被它们判成 real-ip（先命中先生效）
     - DOMAIN-SUFFIX,gradio.live,fake-ip
     - DOMAIN-SUFFIX,ngrok-free.app,fake-ip
     - DOMAIN-SUFFIX,recaptcha.net,fake-ip
@@ -188,17 +157,10 @@ dns:
     - MATCH,fake-ip
 
 proxy-groups:
-  # 机场订阅域名(*.duboji.vip) 和 github 规则集（rule.kelee.one）的下载：默认走代理，直连会把这些域名的明文 SNI 暴露给本地网络；节点全挂时手动切到 直接连接。
-  # 注意：Sub-Store 拉订阅的请求也是先进 TUN、再按规则匹配的，没有这条规则就会落到 兜底流量（经机场节点去拉机场，循环依赖）。
   - {name: 订阅拉取, type: select, proxies: [默认代理, 一键智能, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
   - {name: 美国-ION引擎, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', uselightgbm: true, collectdata: false, sample-rate: 1, prefer-udp: true, penalize-unstable: true, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
   - {name: 手动选择, type: select, include-all: true, empty-fallback: REJECT, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
-  # AI专用：Claude / Anthropic / OpenAI（经 人工智能）。Gemini 已拆出去，不再共用这一组，避免 Gemini 固定/换节点牵连 Claude
   - {name: AI专用, type: select, proxies: [美国-ION引擎, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
-  # Gemini专用：smart 组，节点直接挂在组里，和 美国-ION引擎 用同一条 FilterUSION（节点完全一致），不引用任何其它组。
-  # 平时不点节点 = 这一组自己择优；某个节点 Gemini 报错/"送中"时，在 Zashboard 里点具体节点固定，固定状态只属于这一组。
-  # 注意：对被固定的组点"整组测速"会把固定清掉，想保住固定就别对这一组整组测速。
-  # 「谷歌服务」默认也指向这一组，所以 Google 的静态资源/接口/账号域名会和 gemini.google.com 同一出口。
   - {name: Gemini专用, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
   - {name: '团子招牌ION主用组', <<: *BaseSmart, use: [团子机场], filter: *FilterION, icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png}
   - {name: 默认代理,     <<: *SelectFB, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
@@ -215,7 +177,6 @@ proxy-groups:
   - {name: 奈飞视频,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Netflix.png}
   - {name: 国际媒体,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/DomesticMedia.png}
   - {name: 新闻媒体,     <<: *SelectUS, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple_News.png}
-  # 电报消息不放 直接连接：Telegram 在国内直连本来就连不上，只会把 Telegram 的 IP 暴露给本地网络
   - {name: 电报消息,     type: select, proxies: [默认代理, '团子招牌ION主用组', 一键智能, 故障转移, 香港智能, 狮城智能, 日本智能, 韩国智能, 美国智能, 台湾智能, 欧洲智能, 冷门自选, 手动选择], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
   - {name: 推特社交,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/X.png}
   - {name: 社交平台,     <<: *SelectPY, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/PBS.png}
@@ -238,7 +199,6 @@ proxy-groups:
   - {name: 欧洲智能,  <<: *BaseSmart, filter: *FilterEU, include-all: true, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
 
 rules:
-  # 机场订阅域名：订阅拉取 默认走代理，节点全挂时手动切 直接连接。放最前面，保证任何规则集都截不走它
   - DOMAIN-SUFFIX,duboji.vip,订阅拉取
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
@@ -258,18 +218,11 @@ rules:
   - RULE-SET,Gemini,Gemini专用
   - DOMAIN-KEYWORD,gemini.google,Gemini专用
   - DOMAIN-KEYWORD,bard.google,Gemini专用
-  # Gemini 自家后端（googleapis.com 这几个同时在 ai.mrs 里，不放这里会被后面的 RULE-SET,AI 抢去 人工智能=Claude 那组，出口和 gemini.google.com 不一致）。
-  # generativelanguage 是 Gemini API（填 API key 的客户端走它）。*.google.com 的后端和 gemini.gstatic.com 已被下面的 google.com / gstatic.com 规则拉进 谷歌服务，不用重复写；proactivebackend-pa 已在上面的 Gemini 规则集里。
-  # AI Studio / NotebookLM / cloudcode-pa / Vertex 等其它 Google AI 产品没动，仍按原规则走。
   - DOMAIN-SUFFIX,appsgenaiserver-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,geller-pa.googleapis.com,Gemini专用
   - DOMAIN-SUFFIX,generativelanguage.googleapis.com,Gemini专用
-  # Direct 规则集里带着 www.gstatic.com（和 connectivitycheck.gstatic.com），Gemini 页面的脚本/字体/图标/图片都靠它；
-  # 国内直连这个域名会被重置，必须排在 RULE-SET,Direct 前面把它拉回代理，并且和 Gemini 同一出口
   - DOMAIN-SUFFIX,gstatic.com,谷歌服务
-  # Gemini 网页还会调 geminiweb-pa.clients6.google.com 这类接口，它们同时在 AI 规则集里，会被后面的 RULE-SET,AI 抢去 Claude 那个池，
-  # 和 gemini.google.com 不是同一出口；把 google.com 整体提前收进 谷歌服务 就不会被抢（Google 规则集本来也是这个去向）
   - DOMAIN-SUFFIX,google.com,谷歌服务
   - DOMAIN-SUFFIX,chatgpt.com,人工智能
   - DOMAIN-SUFFIX,openai.com,人工智能
@@ -277,7 +230,6 @@ rules:
   - DOMAIN-SUFFIX,oaiusercontent.com,人工智能
   - DOMAIN-SUFFIX,featureassets.org,人工智能
   - RULE-SET,LocationDKS,抖快书定位
-  # Direct 规则集里带着这两个境外域名（AI 演示 / 开发隧道），不前置会被直连并走国内 DNS
   - DOMAIN-SUFFIX,gradio.live,国外流量
   - DOMAIN-SUFFIX,ngrok-free.app,国外流量
   - RULE-SET,Direct,直接连接
@@ -322,10 +274,9 @@ rules:
   - MATCH,兜底流量
 
 BehaviorDN: &BehaviorDN {type: http, behavior: domain, format: mrs, interval: 86400}
-BehaviorDY: &BehaviorDY {type: http, behavior: domain, format: yaml, interval: 86400}
 BehaviorIP: &BehaviorIP {type: http, behavior: ipcidr, format: mrs, interval: 86400}
 ClassicalText: &ClassicalText {type: http, interval: 86400, behavior: classical, format: text}
-ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, format: yaml, proxy: 订阅拉取}   # 原 DIRECT，直连会把 rule.kelee.one 的明文 SNI 暴露给本地网络
+ClassicalYaml: &ClassicalYaml {type: http, behavior: classical, interval: 3600, format: yaml, proxy: 订阅拉取}
 
 rule-providers:
   AppBlacklist:   {<<: *ClassicalText, url: https://v6.gh-proxy.org/https://github.com/Littlekunlun/Mihomo-Public-Rules/raw/refs/heads/main/app-blacklist.list}
