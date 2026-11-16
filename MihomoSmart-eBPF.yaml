@@ -200,13 +200,13 @@ dns:
 proxy-groups:
   - {name: GoogleFCM, type: select, proxies: [直接连接], icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google.png}
 
-  - {name: 订阅拉取, type: select, proxies: [默认代理, 一键智能, 直接连接], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
+  - {name: 订阅拉取, type: select, proxies: [直接连接, 默认代理, 一键智能], icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Download.png}
 
   - {name: ION超级节点招牌美国组, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/AiDeer.png}
 
   - {name: 手动选择, type: select, include-all: true, empty-fallback: REJECT, filter: *FilterAL, icon: https://gh-proxy.org/https://github.com/Koolson/Qure/raw/master/IconSet/Color/Server.png}
 
-  - {name: AI专用, type: select, proxies: [ION超级节点招牌美国组, 美国智能, 手动选择], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
+  - {name: AI专用, type: select, proxies: [ION超级节点招牌美国组, 美国智能], icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Claude_01.png}
 
   - {name: Gemini专用, type: smart, empty-fallback: REJECT, interval: 3600, url: 'https://www.google.com/generate_204', penalize-unstable: true, uselightgbm: true, collectdata: false, sample-rate: 1, use: [团子机场], filter: *FilterUSION, icon: https://gh-proxy.org/https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Gemini_01.png}
 
