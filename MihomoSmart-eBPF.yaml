@@ -90,7 +90,6 @@ lgbm-update-interval: 72
 lgbm-url: "https://v6.gh-proxy.org/https://github.com/vernesong/mihomo/releases/download/LightGBM-Model/Model-large.bin"
 
 external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
-external-ui-name: zashboard
 external-ui: dashboard
 external-controller: 127.0.0.1:9090
 secret: "MyLibProxy888"
