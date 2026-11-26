@@ -294,6 +294,11 @@ rules:
   - DOMAIN-KEYWORD,gemini.google,Gemini专用
   - DOMAIN-KEYWORD,bard.google,Gemini专用
 
+  - AND,((NETWORK,UDP),(DST-PORT,443),(PROCESS-NAME,com.anthropic.claude)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,claude.ai)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,anthropic.com)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,chatgpt.com)),REJECT
+  - AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,openai.com)),REJECT
   - DOMAIN-SUFFIX,claude.ai,AI专用
   - DOMAIN-SUFFIX,anthropic.com,AI专用
   - PROCESS-NAME,com.anthropic.claude,AI专用
